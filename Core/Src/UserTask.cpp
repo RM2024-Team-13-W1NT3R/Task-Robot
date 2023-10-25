@@ -47,7 +47,13 @@ void userTask(void *)
  * @todo In case you like it, please implement your own tasks
  */
 
-
+/**
+ * @brief A test task for the PID controller
+ * 
+ */
+void testTask() {
+    return;
+}
 
 
 
