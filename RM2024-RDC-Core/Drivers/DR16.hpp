@@ -13,13 +13,10 @@
 #include "stdint.h"
 #include "usart.h"
 #if USE_DR16
-
-
-/*Inlcude the main.h files, where you could access the huart1 handle*/
-#include "main.h"
-
 namespace DR16
 {
+
+const float maxMotorRPM = 5; // defin
 
 /**
  * @brief the DR16 remote controller structure
@@ -50,8 +47,13 @@ typedef struct
     float motor2;
     float motor3;
 } MotorRPM;
-float maxRPM = 5;
 
+
+/**
+ * @brief Limit the RPM if RPM is > maxMotorRPM
+ * @brief Uses the global variable maxMotorRPM and MotorRPM struct
+ * 
+ */
 void limitRPM();
 
 /**

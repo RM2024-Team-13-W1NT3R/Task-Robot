@@ -67,8 +67,6 @@ void rxEventCallback(UART_HandleTypeDef *huart, uint16_t datasize) {
     }
 }
 
-
-
 bool getIsRcConnected() {
     uint32_t currentTime = HAL_GetTick();
     if ((lastUpdatedTime + 1000 > currentTime )) {
@@ -85,7 +83,6 @@ const bool *getRcConnected() {
     getIsRcConnected();
     return &rcConnected;
 }
-
 
 
 /*================================================================================*/
