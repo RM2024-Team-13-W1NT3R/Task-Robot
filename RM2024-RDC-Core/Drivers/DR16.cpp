@@ -94,6 +94,54 @@ const bool *getRcConnected() {
     return &rcConnected;
 }
 
+// Max/Min ^ 2 * RPMConstant = MaxRPM
+const float RPMConstant = 0.05;
+
+// Find the Absolute Value of a Number (because I overlooked squaring a number is always positive)
+#define Abs(N) ((N<0)?(-N):(N))
+
+/**
+ * @brief Converts the signals from the DR16 controller to RPM
+ * @brief When tweaking the maxRPM, remember to tweak the constant
+ * @brief Max output of 1 channel should roughly give the maxRPM for optimal efficiency and control
+*/
+MotorRPM setRPM(RcData originalData) {
+    // Convert the channel data into a range between -100 and 100 because numbers like 1377 are ugly af
+    // Also because we need an +- range to set voltage/RPM easily
+    int robotRotation = (originalData.channel0 - 1024)/6.6;
+    int idkwhatthischannelwillbeusedfor = (originalData.channel1 - 1024)/6.6;
+    int robotHorizontal = (originalData.channel2 - 1024)/6.6;
+    int robotVertical = (originalData.channel3 - 1024)/6.6;
+
+    // Forward and Backwards (Vertical) Motion, forward = positive
+    int motor0Vertical = robotVertical * Abs(robotVertical) * RPMConstant;
+    int motor1Vertical = robotVertical * Abs(robotVertical) * RPMConstant;
+    int motor2Vertical = robotVertical * Abs(robotVertical) * RPMConstant;
+    int motor3Vertical = robotVertical * Abs(robotVertical) * RPMConstant;
+
+    // Left and Right (Horizontal) Motion, right = positive
+    int motor0Horizontal = robotHorizontal * Abs(robotHorizontal) * RPMConstant;
+    int motor1Horizontal = - robotHorizontal * Abs(robotHorizontal) * RPMConstant;
+    int motor2Horizontal = - robotHorizontal * Abs(robotHorizontal) * RPMConstant;
+    int motor3Horizontal = robotHorizontal * Abs(robotHorizontal) * RPMConstant;
+
+    // Rotational Motion, clockwise = positive
+    int motor0Rotational = robotRotation * Abs(robotRotation) * RPMConstant;
+    int motor1Rotational = - robotRotation * Abs(robotRotation) * RPMConstant;
+    int motor2Rotational = robotRotation * Abs(robotRotation) * RPMConstant;
+    int motor3Rotational = - robotRotation * Abs(robotRotation) * RPMConstant;
+
+
+    // Add all of the motor controls together
+    MotorRPM motorRPM;
+    motorRPM.motor0 = motor0Horizontal + motor0Vertical + motor0Rotational;
+    motorRPM.motor1 = motor1Horizontal + motor1Vertical + motor1Rotational;
+    motorRPM.motor2 = motor2Horizontal + motor2Vertical + motor2Rotational;
+    motorRPM.motor3 = motor3Horizontal + motor3Vertical + motor3Rotational;
+
+    return motorRPM;
+}
+
 
 /**
  * @brief Limit the RPM if RPM is > maxMotorRPM
