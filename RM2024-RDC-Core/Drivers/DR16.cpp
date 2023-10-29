@@ -16,6 +16,7 @@ namespace DR16
  * @remark Refer to the definition of the structure in the "DR16.hpp" files
  */
 static RcData rcData;
+static MotorRPM motorRPM;
 bool rcConnected = false;
 /*Return the constant pointer of the current decoded data*/
 const RcData *getRcData() { return &rcData; }
@@ -58,12 +59,21 @@ void decodeRcData() {
 
 void rxEventCallback(UART_HandleTypeDef *huart, uint16_t datasize) {
     if (huart->Instance == USART1) {
-        decodeRcData();
-        HAL_UARTEx_ReceiveToIdle_IT(huart, rcRxBuffer, DR16::DR16_FRAME_LENGTH);
+        decodeRcData(); // decode the controller data to rcData
+        HAL_UARTEx_ReceiveToIdle_IT(huart, rcRxBuffer, DR16::DR16_FRAME_LENGTH); // start the next round of UART data reception
+
+        // reset the rcData if the data is invalid
         if (!validateRcData()) {
             resetRcData();
         }
+
+        // update the last updated time
         lastUpdatedTime = HAL_GetTick();
+
+        /**
+         * @brief update the motor RPM here
+         * @todo implement the function
+         */
     }
 }
 
@@ -84,6 +94,44 @@ const bool *getRcConnected() {
     return &rcConnected;
 }
 
+
+/**
+ * @brief Limit the RPM if RPM is > maxMotorRPM
+ * @brief Uses the global variable maxMotorRPM and MotorRPM struct
+ * 
+ */
+void limitRPM() {
+
+    // get the highest RPM
+    float maxRPM = motorRPM.motor0;
+    if (motorRPM.motor1 > maxRPM) {
+        maxRPM = motorRPM.motor1;
+    } else if (motorRPM.motor2 > maxRPM) {
+        maxRPM = motorRPM.motor2;
+    } else if (motorRPM.motor3 > maxRPM) {
+        maxRPM = motorRPM.motor3;
+    }
+
+    // limit the RPM if it is higher than the maxMotorRPM
+    if (maxRPM > maxMotorRPM) {
+        motorRPM.motor0 = motorRPM.motor0 / maxRPM * maxMotorRPM;
+        motorRPM.motor1 = motorRPM.motor1 / maxRPM * maxMotorRPM;
+        motorRPM.motor2 = motorRPM.motor2 / maxRPM * maxMotorRPM;
+        motorRPM.motor3 = motorRPM.motor3 / maxRPM * maxMotorRPM;
+    }
+}
+
+/**
+ * @brief set respective motor RPM
+ * 
+ */
+void controlMotorRPM() {
+    // limitRPM();
+    // motor0.setRPM(motorRPM.motor0);
+    // motor1.setRPM(motorRPM.motor1);
+    // motor2.setRPM(motorRPM.motor2);
+    // motor3.setRPM(motorRPM.motor3);
+}
 
 /*================================================================================*/
 void init()

@@ -48,14 +48,6 @@ typedef struct
     float motor3;
 } MotorRPM;
 
-
-/**
- * @brief Limit the RPM if RPM is > maxMotorRPM
- * @brief Uses the global variable maxMotorRPM and MotorRPM struct
- * 
- */
-void limitRPM();
-
 /**
  * @brief Access the decoded remote controller datat by this API
  * @remark You are recommended to:
