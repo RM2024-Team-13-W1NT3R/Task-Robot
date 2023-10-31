@@ -16,11 +16,14 @@ namespace DR16
  * @remark Refer to the definition of the structure in the "DR16.hpp" files
  */
 static RcData rcData;
-static MotorRPM motorRPM;
+static MotorRPM motorRPM = {};
 bool rcConnected = false;
 /*Return the constant pointer of the current decoded data*/
 const RcData *getRcData() { return &rcData; }
 uint32_t lastUpdatedTime;
+
+MotorRPM setRPM(RcData);
+void limitRPM();
 
 /*================================================================================*/
 /*You are free to declare your buffer, or implement your own function(callback, decoding) here*/
@@ -65,6 +68,7 @@ void rxEventCallback(UART_HandleTypeDef *huart, uint16_t datasize) {
         // reset the rcData if the data is invalid
         if (!validateRcData()) {
             resetRcData();
+            return;
         }
 
         // update the last updated time
@@ -74,6 +78,8 @@ void rxEventCallback(UART_HandleTypeDef *huart, uint16_t datasize) {
          * @brief update the motor RPM here
          * @todo implement the function
          */
+        setRPM(rcData);
+        limitRPM();
     }
 }
 
@@ -94,8 +100,8 @@ const bool *getRcConnected() {
     return &rcConnected;
 }
 
-// Max/Min ^ 2 * RPMConstant = MaxRPM
-const float RPMConstant = 0.05;
+// Max/Min ^ 2 * RPMConstant = maxMotorRPM
+const float RPMConstant = maxMotorRPM / 10000;
 
 // Find the Absolute Value of a Number (because I overlooked squaring a number is always positive)
 #define Abs(N) ((N<0)?(-N):(N))
@@ -133,7 +139,7 @@ MotorRPM setRPM(RcData originalData) {
 
 
     // Add all of the motor controls together
-    MotorRPM motorRPM;
+    // MotorRPM motorRPM;
     motorRPM.motor0 = motor0Horizontal + motor0Vertical + motor0Rotational;
     motorRPM.motor1 = motor1Horizontal + motor1Vertical + motor1Rotational;
     motorRPM.motor2 = motor2Horizontal + motor2Vertical + motor2Rotational;
@@ -151,12 +157,12 @@ MotorRPM setRPM(RcData originalData) {
 void limitRPM() {
 
     // get the highest RPM
-    float maxRPM = motorRPM.motor0;
-    if (motorRPM.motor1 > maxRPM) {
+    float maxRPM = Abs(motorRPM.motor0);
+    if (Abs(motorRPM.motor1) > maxRPM) {
         maxRPM = motorRPM.motor1;
-    } else if (motorRPM.motor2 > maxRPM) {
+    } else if (Abs(motorRPM.motor2) > maxRPM) {
         maxRPM = motorRPM.motor2;
-    } else if (motorRPM.motor3 > maxRPM) {
+    } else if (Abs(motorRPM.motor3) > maxRPM) {
         maxRPM = motorRPM.motor3;
     }
 
@@ -186,8 +192,8 @@ void init()
 {
     /*If you would like to, please implement your function definition here*/
     resetRcData();
-    HAL_UART_RegisterRxEventCallback(&huart1, DR16::rxEventCallback);
-    HAL_UARTEx_ReceiveToIdle_IT(&huart1, rcRxBuffer, DR16::DR16_FRAME_LENGTH);
+    HAL_UART_RegisterRxEventCallback(&huart1, rxEventCallback);
+    HAL_UARTEx_ReceiveToIdle_IT(&huart1, rcRxBuffer, DR16_FRAME_LENGTH);
 }
 
 }  // namespace DR16
