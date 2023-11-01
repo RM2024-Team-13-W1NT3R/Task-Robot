@@ -89,7 +89,7 @@ float getRPM(uint16_t canID);
  * - For M3508, it's the motor's currnet
  * @retval
  */
-void setOutput(int16_t output);
+void setOutput(int16_t output, uint16_t canID);
 
 /**
  * @brief Transmit the current set motor's output to the groups of motor based
