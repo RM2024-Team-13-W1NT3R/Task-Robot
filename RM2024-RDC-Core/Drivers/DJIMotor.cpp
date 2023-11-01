@@ -1,5 +1,6 @@
 #include "DJIMotor.hpp"
 
+
 // DEF
 #ifdef USE_DJI_MOTOR
 #ifndef RDC_DJIMotor_MAX_NUM
@@ -11,27 +12,14 @@ namespace DJIMotor
 
 // Initialize motor's controller instance
 
-DJIMotor motors[8];
+DJIMotor motorFeedback[8];
+
 uint32_t mailbox;
-uint8_t rxData1[8];
-//uint8_t rxData2[8];
-//uint8_t rxData3[8];
-//uint8_t rxData4[8];
+uint8_t rxData[4][8];
 uint8_t txData[8];
 CAN_TxHeaderTypeDef txHeader = {0x200,0,CAN_ID_STD,CAN_RTR_DATA,8,DISABLE};
 CAN_RxHeaderTypeDef rxHeader;
 CAN_FilterTypeDef filter = {0x201<<5,0x202<<5,0x203<<5,0x204<<5,CAN_FILTER_FIFO0,0,CAN_FILTERMODE_IDLIST,CAN_FILTERSCALE_16BIT,CAN_FILTER_ENABLE,0};
-typedef struct
-{
-    uint16_t rotorAngle;
-    uint16_t rpm;
-    uint16_t torqueCurrent;
-    uint8_t temperature;
-}motorFeedback;
-motorFeedback motor1feedback;
-//motorFeedback motor2feedback = {rxData2[0]<<8|rxData2[1],rxData2[2]<<8|rxData2[3],rxData2[4]<<8|rxData2[5],rxData2[6]};
-//motorFeedback motor3feedback = {rxData3[0]<<8|rxData3[1],rxData3[2]<<8|rxData3[3],rxData3[4]<<8|rxData3[5],rxData3[6]};
-//motorFeedback motor4feedback = {rxData4[0]<<8|rxData4[1],rxData4[2]<<8|rxData4[3],rxData4[4]<<8|rxData4[5],rxData4[6]};
  
 /*========================================================*/
 // Your implementation of the function, or even your customized function, should
@@ -48,19 +36,21 @@ void init() {
 /**
  * @todo
  */
-float getEncoder(uint16_t canID) { 
-    HAL_CAN_AddRxMessage(&hcan, CAN_RX_FIFO0, &rxHeader, rxData1);
-    motor1feedback = {rxData1[0]<<8|rxData1[1],rxData1[2]<<8|rxData1[3],rxData1[4]<<8|rxData1[5],rxData1[6]};
-    return motor1feedback;
+void getEncoder(uint16_t canID) { 
+    HAL_CAN_GetRxMessage(&hcan, CAN_RX_FIFO0, &rxHeader, rxData[canID-1]);
+    motorFeedback[canID-1].canID = canID;
+    motorFeedback[canID-1].rotorAngle = rxData[canID-1][0]<<8|rxData[canID-1][1];
+    motorFeedback[canID-1].rpm = rxData[canID-1][2]<<8|rxData[canID-1][3];
+    motorFeedback[canID-1].torqueCurrent = rxData[canID-1][4]<<8|rxData[canID-1][5];
+    motorFeedback[canID-1].temperature = rxData[canID-1][6];
+   // return motor1feedback;
  }
 
 /**
  * @todo
  */
 float getRPM(uint16_t canID) { 
-    uint16_t rpm;
-    rpm = motor1feedback.rpm;
-    return rpm;
+    return motorFeedback[canID-1].rpm;
  }
 
 /**
@@ -76,8 +66,9 @@ void setOutput(int16_t output, uint16_t canID) {
     {
         output = -maxCurrent;
     }
+    uint8_t mask = 0xff;
+    txData[(canID-1)*2 + 1] = mask & output;
     txData[(canID-1)*2] = output >> 8;
-    txData[(canID-1)*2 + 1] = output << 8;
 }
 
 /**

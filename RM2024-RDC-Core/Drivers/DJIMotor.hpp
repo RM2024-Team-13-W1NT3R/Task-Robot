@@ -22,6 +22,7 @@
 
 #include "main.h"
 
+#include "can.h"
 namespace DJIMotor
 {
 
@@ -51,6 +52,10 @@ struct DJIMotor
      * float orientation; //  get the accumulated orientation of the motor
      * ......
      */
+    uint16_t rotorAngle;
+    uint16_t rpm;
+    uint16_t torqueCurrent;
+    uint8_t temperature;
     /*=======================================================*/
 };
 
@@ -68,7 +73,7 @@ void init();
  * need it in the PID module
  * @retval motor's raw encoder
  */
-float getEncoder(uint16_t canID);
+void getEncoder(uint16_t canID);
 
 /**
  * @brief The rpm getter function
@@ -115,8 +120,6 @@ accumulated position(orientation) of the motor
  * ..... And more .....
  *
 ============================================================*/
-
-
 
 
 
