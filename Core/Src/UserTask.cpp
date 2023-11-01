@@ -35,7 +35,13 @@ void userTask(void *)
     {
         /* Your user layer codes in loop begin here*/
         /*=================================================*/
-
+        DJIMotor::getEncoder(1);
+        int currentRPM = DJIMotor::getRPM(1);
+        Control::PID pid1 {0, 0, 0};
+        float targetCurrent = pid1.update(60, currentRPM);
+        
+        DJIMotor::setOutput(targetCurrent, 1);
+        DJIMotor::transmit(0);
         /* Your user layer codes in loop end here*/
         /*=================================================*/
 
