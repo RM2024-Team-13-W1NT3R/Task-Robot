@@ -126,21 +126,21 @@ void setRPM(RcData originalData) {
 
     // Forward and Backwards (Vertical) Motion, forward = positive
     int motor0Vertical = robotVertical * Abs(robotVertical) * RPMConstant;
-    int motor1Vertical = robotVertical * Abs(robotVertical) * RPMConstant;
+    int motor1Vertical = - robotVertical * Abs(robotVertical) * RPMConstant;
     int motor2Vertical = robotVertical * Abs(robotVertical) * RPMConstant;
-    int motor3Vertical = robotVertical * Abs(robotVertical) * RPMConstant;
+    int motor3Vertical = - robotVertical * Abs(robotVertical) * RPMConstant;
 
     // Left and Right (Horizontal) Motion, right = positive
     int motor0Horizontal = robotHorizontal * Abs(robotHorizontal) * RPMConstant;
-    int motor1Horizontal = - robotHorizontal * Abs(robotHorizontal) * RPMConstant;
+    int motor1Horizontal = robotHorizontal * Abs(robotHorizontal) * RPMConstant;
     int motor2Horizontal = - robotHorizontal * Abs(robotHorizontal) * RPMConstant;
-    int motor3Horizontal = robotHorizontal * Abs(robotHorizontal) * RPMConstant;
+    int motor3Horizontal = - robotHorizontal * Abs(robotHorizontal) * RPMConstant;
 
     // Rotational Motion, clockwise = positive
     int motor0Rotational = robotRotation * Abs(robotRotation) * RPMConstant;
-    int motor1Rotational = - robotRotation * Abs(robotRotation) * RPMConstant;
+    int motor1Rotational = robotRotation * Abs(robotRotation) * RPMConstant;
     int motor2Rotational = robotRotation * Abs(robotRotation) * RPMConstant;
-    int motor3Rotational = - robotRotation * Abs(robotRotation) * RPMConstant;
+    int motor3Rotational = robotRotation * Abs(robotRotation) * RPMConstant;
 
 
     // Add all of the motor controls together
