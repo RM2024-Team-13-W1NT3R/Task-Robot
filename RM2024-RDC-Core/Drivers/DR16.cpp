@@ -15,20 +15,25 @@ namespace DR16
  * @remark If you wish to, please decode the DR16 data from the buffer to here
  * @remark Refer to the definition of the structure in the "DR16.hpp" files
  */
+
+// Declaring variables
 static RcData rcData;
 static MotorRPM motorRPM = {};
 bool rcConnected = false;
-/*Return the constant pointer of the current decoded data*/
-const RcData *getRcData() { return &rcData; }
 uint32_t lastUpdatedTime;
 
-MotorRPM setRPM(RcData);
+// Internal function declarations
+void setRPM(RcData);
 void limitRPM();
 
 /*================================================================================*/
 /*You are free to declare your buffer, or implement your own function(callback, decoding) here*/
 const uint8_t DR16_FRAME_LENGTH = 18;
 uint8_t rcRxBuffer[DR16::DR16_FRAME_LENGTH];
+
+const RcData *getRcData() { return &rcData;}
+
+const MotorRPM *getMotorRPM() { return &motorRPM;}
 
 void resetRcData() {
     rcData.channel0 = 1024;
@@ -111,7 +116,7 @@ const float RPMConstant = maxMotorRPM / 10000;
  * @brief When tweaking the maxRPM, remember to tweak the constant
  * @brief Max output of 1 channel should roughly give the maxRPM for optimal efficiency and control
 */
-MotorRPM setRPM(RcData originalData) {
+void setRPM(RcData originalData) {
     // Convert the channel data into a range between -100 and 100 because numbers like 1377 are ugly af
     // Also because we need an +- range to set voltage/RPM easily
     int robotRotation = (originalData.channel0 - 1024)/6.6;
@@ -144,8 +149,6 @@ MotorRPM setRPM(RcData originalData) {
     motorRPM.motor1 = motor1Horizontal + motor1Vertical + motor1Rotational;
     motorRPM.motor2 = motor2Horizontal + motor2Vertical + motor2Rotational;
     motorRPM.motor3 = motor3Horizontal + motor3Vertical + motor3Rotational;
-
-    return motorRPM;
 }
 
 

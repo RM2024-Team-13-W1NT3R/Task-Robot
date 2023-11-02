@@ -43,7 +43,25 @@ void userTask(void *)
         /*=================================================*/
         for (uint64_t canID = 1; canID <= 1; canID++) {
             DJIMotor::getEncoder(canID);
-            float targetCurrent = pid[canID-1].update(DJIMotor::getTargetRPM(canID), DJIMotor::getRPM(canID));
+            float targetRPM {};
+            switch (canID)
+            {
+            case 1:
+                targetRPM = DR16::getMotorRPM()->motor0;
+                break;
+            case 2:
+                targetRPM = DR16::getMotorRPM()->motor1;
+                break;
+            case 3:
+                targetRPM = DR16::getMotorRPM()->motor2;
+                break;
+            case 4:
+                targetRPM = DR16::getMotorRPM()->motor3;
+                break;
+            default:
+                break;
+            }
+            float targetCurrent = pid[canID-1].update(targetRPM, DJIMotor::getRPM(canID));
             
             DJIMotor::setOutput(targetCurrent, canID);
         }

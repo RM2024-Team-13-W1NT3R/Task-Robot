@@ -60,6 +60,12 @@ const RcData *getRcData();
 /*You can declare your own function here, supposing you would like to desgin a
  * more complicated DR16 module*/
 
+/**
+ * @brief Get the RPM of the mecanum motors
+ * 
+ * 
+ */
+const MotorRPM *getMotorRPM();
 
 /**
  * @brief Get the status of the remote controller
