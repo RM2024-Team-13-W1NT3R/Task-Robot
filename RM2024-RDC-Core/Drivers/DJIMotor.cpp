@@ -74,23 +74,23 @@ void setOutput(int16_t output, uint16_t canID) {
     txData[(canID-1)*2] = output >> 8;
 }
 
-void setTargetRPM(int16_t targetRPM, uint16_t canID) {
-    if (targetRPM > maxRPM)
-    {
-        targetRPM = maxRPM;
-    }
-    else if(targetRPM < -maxRPM)
-    {
-        targetRPM = -maxRPM;
-    }
-    int16_t mask = 0x00ff;
-    txData[(canID-1)*2 + 1] = mask & targetRPM;
-    txData[(canID-1)*2] = targetRPM >> 8;
-}
+// void setTargetRPM(int16_t targetRPM, uint16_t canID) {
+//     if (targetRPM > maxRPM)
+//     {
+//         targetRPM = maxRPM;
+//     }
+//     else if(targetRPM < -maxRPM)
+//     {
+//         targetRPM = -maxRPM;
+//     }
+//     int16_t mask = 0x00ff;
+//     txData[(canID-1)*2 + 1] = mask & targetRPM;
+//     txData[(canID-1)*2] = targetRPM >> 8;
+// }
 
-int16_t getTargetRPM(uint16_t canID) {
-    return motorFeedback[canID-1].targetRPM;
-}
+// int16_t getTargetRPM(uint16_t canID) {
+//     return motorFeedback[canID-1].targetRPM;
+// }
 
 /**
  * @todo
