@@ -12,7 +12,7 @@ namespace DJIMotor
 #define DJI_MOTOR_COUNT 4
 // Initialize motor's controller instance
 
-DJIMotor motorFeedback[8];
+DJIMotor motorFeedback[DJI_MOTOR_COUNT];
 
 uint32_t mailbox;
 uint8_t rxData[DJI_MOTOR_COUNT][8];
@@ -20,6 +20,7 @@ uint8_t txData[8];
 CAN_TxHeaderTypeDef txHeader = {0x200,0,CAN_ID_STD,CAN_RTR_DATA,8,DISABLE};
 CAN_RxHeaderTypeDef rxHeader;
 CAN_FilterTypeDef filter[DJI_MOTOR_COUNT];
+uint8_t tempData[8];
  
 /*========================================================*/
 // Your implementation of the function, or even your customized function, should
@@ -29,10 +30,12 @@ CAN_FilterTypeDef filter[DJI_MOTOR_COUNT];
  * @todo
  */
 void init() {
-    for (uint32_t i = 0; i < DJI_MOTOR_COUNT; i++) {
-        filter[i] = {(0x20+i+1)<<5,0,0,0,CAN_FILTER_FIFO0,0,CAN_FILTERMODE_IDLIST,CAN_FILTERSCALE_16BIT,CAN_FILTER_ENABLE,0};
-    }
-    HAL_CAN_ConfigFilter(&hcan, &filter[0]);
+    //for (uint32_t i = 0; i < DJI_MOTOR_COUNT; i++) {
+    filter[0] = {0x201<<5,0,0,0,CAN_FILTER_FIFO0,0,CAN_FILTERMODE_IDLIST,CAN_FILTERSCALE_16BIT,CAN_FILTER_ENABLE,0};
+    filter[1] = {0x202<<5,0,0,0,CAN_FILTER_FIFO0,0,CAN_FILTERMODE_IDLIST,CAN_FILTERSCALE_16BIT,CAN_FILTER_ENABLE,0};
+    filter[2] = {0x203<<5,0,0,0,CAN_FILTER_FIFO0,0,CAN_FILTERMODE_IDLIST,CAN_FILTERSCALE_16BIT,CAN_FILTER_ENABLE,0};
+    filter[3] = {0x204<<5,0,0,0,CAN_FILTER_FIFO0,0,CAN_FILTERMODE_IDLIST,CAN_FILTERSCALE_16BIT,CAN_FILTER_ENABLE,0};
+    // HAL_CAN_ConfigFilter(&hcan, &filter[0]);
     HAL_CAN_Start(&hcan);
 }
 
@@ -53,7 +56,8 @@ void getEncoder(uint16_t canID) {
 /**
  * @todo
  */
-float getRPM(uint16_t canID) { 
+ float getRPM(uint16_t canID) { 
+    getEncoder(canID);
     return motorFeedback[canID-1].rpm;
  }
 
@@ -69,7 +73,7 @@ void setOutput(int16_t output, uint16_t canID) {
     {
         output = -maxCurrent;
     }
-    int16_t mask = 0x00ff;
+    uint8_t mask = 0xff;
     txData[(canID-1)*2 + 1] = mask & output;
     txData[(canID-1)*2] = output >> 8;
 }
@@ -95,7 +99,7 @@ void setOutput(int16_t output, uint16_t canID) {
 /**
  * @todo
  */
-void transmit(uint16_t header) {
+void transmit() {
     HAL_CAN_AddTxMessage(&hcan,&txHeader,txData, &mailbox);
 }
 

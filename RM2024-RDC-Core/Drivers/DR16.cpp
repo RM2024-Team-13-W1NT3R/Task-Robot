@@ -69,6 +69,7 @@ void rxEventCallback(UART_HandleTypeDef *huart, uint16_t datasize) {
     if (huart->Instance == USART1) {
         decodeRcData(); // decode the controller data to rcData
         HAL_UARTEx_ReceiveToIdle_IT(huart, rcRxBuffer, DR16::DR16_FRAME_LENGTH); // start the next round of UART data reception
+        getRcConnected();
 
         // reset the rcData if the data is invalid
         if (!validateRcData()) {

@@ -21,10 +21,9 @@ StackType_t uxPIDTaskStack[configMINIMAL_STACK_SIZE];
 /*Declare the PCB for our PID task*/
 StaticTask_t xPIDTaskTCB;
 
-static volatile float kp = 0.0f;
+static volatile float kp = 8.0f;
 static volatile float ki = 0.0f;
 static volatile float kd = 0.0f;
-
 
 /**
  * @todo Show your control outcome of the M3508 motor as follows
@@ -33,17 +32,19 @@ void userTask(void *)
 {
     /* Your user layer codes begin here*/
     /*=================================================*/
-    
-    Control::PID pid [4] {{kp, ki, kd},{kp, ki, kd},{kp, ki, kd},{kp, ki, kd}};
+
+    Control::PID pid[4]{{kp, ki, kd}, {kp, ki, kd}, {kp, ki, kd}, {kp, ki, kd}};
     /* Your user layer codes end here*/
     /*=================================================*/
     while (true)
     {
         /* Your user layer codes in loop begin here*/
         /*=================================================*/
-        for (uint64_t canID = 1; canID <= 1; canID++) {
+        for (uint16_t canID = 1; canID <= 4; canID++)
+        {
+            
             DJIMotor::getEncoder(canID);
-            float targetRPM {};
+            float targetRPM{};
             switch (canID)
             {
             case 1:
@@ -61,11 +62,12 @@ void userTask(void *)
             default:
                 break;
             }
-            float targetCurrent = pid[canID-1].update(targetRPM, DJIMotor::getRPM(canID));
-            
+            float targetCurrent =
+                pid[canID - 1].update(targetRPM, DJIMotor::getRPM(canID));
+
             DJIMotor::setOutput(targetCurrent, canID);
         }
-        DJIMotor::transmit(0);
+        DJIMotor::transmit();
         /* Your user layer codes in loop end here*/
         /*=================================================*/
 
@@ -77,17 +79,10 @@ void userTask(void *)
  * @todo In case you like it, please implement your own tasks
  */
 
-
-
-
-
-
-
-
 /**
  * @brief Intialize all the drivers and add task to the scheduler
  * @todo  Add your own task in this file
-*/
+ */
 void startUserTasks()
 {
     DJIMotor::init();  // Initalize the DJIMotor driver
@@ -102,5 +97,5 @@ void startUserTasks()
                       &xPIDTaskTCB);  // Add the main task into the scheduler
     /**
      * @todo Add your own task here
-    */
+     */
 }

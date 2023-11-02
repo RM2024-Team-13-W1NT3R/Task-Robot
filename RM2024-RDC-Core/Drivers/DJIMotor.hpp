@@ -122,7 +122,7 @@ void setOutput(int16_t output, uint16_t canID);
  * @param
  * @retval
  */
-void transmit(uint16_t header);
+void transmit();
 
 /*===========================================================*/
 /**
