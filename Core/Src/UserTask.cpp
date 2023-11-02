@@ -21,6 +21,11 @@ StackType_t uxPIDTaskStack[configMINIMAL_STACK_SIZE];
 /*Declare the PCB for our PID task*/
 StaticTask_t xPIDTaskTCB;
 
+static volatile float kp = 0.0f;
+static volatile float ki = 0.0f;
+static volatile float kd = 0.0f;
+
+
 /**
  * @todo Show your control outcome of the M3508 motor as follows
  */
@@ -28,14 +33,21 @@ void userTask(void *)
 {
     /* Your user layer codes begin here*/
     /*=================================================*/
-
+    
+    Control::PID pid [4] {{kp, ki, kd},{kp, ki, kd},{kp, ki, kd},{kp, ki, kd}};
     /* Your user layer codes end here*/
     /*=================================================*/
     while (true)
     {
         /* Your user layer codes in loop begin here*/
         /*=================================================*/
-
+        for (uint64_t canID = 1; canID <= 1; canID++) {
+            DJIMotor::getEncoder(canID);
+            float targetCurrent = pid[canID-1].update(DJIMotor::getTargetRPM(canID), DJIMotor::getRPM(canID));
+            
+            DJIMotor::setOutput(targetCurrent, canID);
+        }
+        DJIMotor::transmit(0);
         /* Your user layer codes in loop end here*/
         /*=================================================*/
 
