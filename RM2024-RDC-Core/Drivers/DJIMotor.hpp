@@ -37,6 +37,12 @@ namespace DJIMotor
  * @brief Instead of copy and paste your codes for four times
  * @brief This is what we really appreiciate in our programming
  */
+
+
+const int16_t maxRPM = 3000;
+const int16_t maxCurrent = 16384;
+
+
 struct DJIMotor
 {
     uint16_t canID;  // You need to assign motor's can ID for different motor
@@ -52,9 +58,10 @@ struct DJIMotor
      * float orientation; //  get the accumulated orientation of the motor
      * ......
      */
-    uint16_t rotorAngle;
-    uint16_t rpm;
-    uint16_t torqueCurrent;
+    int16_t rotorAngle;
+    int16_t rpm;
+    int16_t targetRPM;
+    int16_t torqueCurrent;
     uint8_t temperature;
     /*=======================================================*/
 };
@@ -95,6 +102,12 @@ float getRPM(uint16_t canID);
  * @retval
  */
 void setOutput(int16_t output, uint16_t canID);
+
+/**
+ * @brief Set the motor's target rpm here
+ * @param targetRPM, canID The motor's target rpm, unique can Id
+ */
+void setTargetRPM(int16_t targetRPM, uint16_t canID);
 
 /**
  * @brief Transmit the current set motor's output to the groups of motor based
