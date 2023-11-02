@@ -99,7 +99,6 @@ float getRPM(uint16_t canID);
  * @note
  * - For GM6020, it's the motor's voltage
  * - For M3508, it's the motor's currnet
- * @retval
  */
 void setOutput(int16_t output, uint16_t canID);
 
@@ -108,6 +107,13 @@ void setOutput(int16_t output, uint16_t canID);
  * @param targetRPM, canID The motor's target rpm, unique can Id
  */
 void setTargetRPM(int16_t targetRPM, uint16_t canID);
+
+/**
+ * @brief Get the motor's target rpm here 
+ * @param canID The motor's unique can Id
+ * @retval The motor's target rpm
+ */
+int16_t getTargetRPM(uint16_t canID);
 
 /**
  * @brief Transmit the current set motor's output to the groups of motor based

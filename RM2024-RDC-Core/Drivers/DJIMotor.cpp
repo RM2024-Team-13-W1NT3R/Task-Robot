@@ -88,6 +88,10 @@ void setTargetRPM(int16_t targetRPM, uint16_t canID) {
     txData[(canID-1)*2] = targetRPM >> 8;
 }
 
+int16_t getTargetRPM(uint16_t canID) {
+    return motorFeedback[canID-1].targetRPM;
+}
+
 /**
  * @todo
  */
