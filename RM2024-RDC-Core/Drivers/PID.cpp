@@ -16,7 +16,7 @@ float PID::update(float target, float measurement, float dt)
 
     dOut = Kd * (error - lastError) / dt;
 
-    output = pOut + iOut + dOut;
+    output = pOut + iOut + dOut + measurement;
 
     lastError = error;
     /*=====================================================================*/

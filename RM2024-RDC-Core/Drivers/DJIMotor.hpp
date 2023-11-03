@@ -79,7 +79,7 @@ void init();
  * need it in the PID module
  * @retval motor's raw encoder
  */
-void getEncoder(uint16_t canID);
+float getEncoder(uint16_t canID);
 
 /**
  * @brief The rpm getter function
@@ -138,7 +138,7 @@ accumulated position(orientation) of the motor
  * ..... And more .....
  *
 ============================================================*/
-
+bool getRxMessage(uint16_t canID);
 
 
 /*===========================================================*/
