@@ -14,6 +14,12 @@ float PID::update(float target, float measurement, float dt)
 
     iOut += Ki * error * dt;
 
+    if (iOut > 1000) {
+        iOut = 1000;
+    } else if (iOut < -1000) {
+        iOut = -1000;
+    }
+
     dOut = Kd * (error - lastError) / dt;
 
     output = pOut + iOut + dOut;

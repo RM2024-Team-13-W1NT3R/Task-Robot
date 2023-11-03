@@ -99,7 +99,8 @@ float getRPM(uint16_t canID);
  * - For GM6020, it's the motor's voltage
  * - For M3508, it's the motor's currnet
  */
-void setOutput(int16_t output, uint16_t canID);
+void setOutput(float output, uint16_t canID);
+
 
 // /**
 //  * @brief Set the motor's target rpm here

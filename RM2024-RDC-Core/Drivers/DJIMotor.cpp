@@ -132,7 +132,7 @@ float getRPM(uint16_t canID) { return motorFeedback[canID - 1].rpm; }
 /**
  * @todo
  */
-void setOutput(int16_t output, uint16_t canID)
+void setOutput(float output, uint16_t canID)
 {
     if (output > maxCurrent)
     {
@@ -142,9 +142,9 @@ void setOutput(int16_t output, uint16_t canID)
     {
         output = -maxCurrent;
     }
-    uint8_t mask                = 0xff;
-    txData[(canID - 1) * 2 + 1] = mask & output;
-    txData[(canID - 1) * 2]     = output >> 8;
+    // uint8_t mask                = 0xff;
+    txData[(canID - 1) * 2 + 1] = (static_cast<int> (output));
+    txData[(canID - 1) * 2]     = (static_cast<int> (output) >> 8);
 }
 
 /**

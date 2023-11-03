@@ -21,6 +21,11 @@ static RcData rcData;
 static MotorRPM motorRPM = {};
 bool rcConnected = false;
 uint32_t lastUpdatedTime;
+uint32_t lastConnectedTime;
+
+static HAL_StatusTypeDef status;
+
+float maxMotorRPM = 9000;
 
 // Internal function declarations
 void setRPM(RcData);
@@ -42,6 +47,10 @@ void resetRcData() {
     rcData.channel3 = 1024;
     rcData.s1 = 3;
     rcData.s2 = 3;
+    motorRPM.motor0 = 0;
+    motorRPM.motor1 = 0;
+    motorRPM.motor2 = 0;
+    motorRPM.motor3 = 0;
 }
 
 bool validateRcData() {
@@ -66,38 +75,36 @@ void decodeRcData() {
 }
 
 void rxEventCallback(UART_HandleTypeDef *huart, uint16_t datasize) {
-    if (huart->Instance == USART1) {
-        decodeRcData(); // decode the controller data to rcData
-        HAL_UARTEx_ReceiveToIdle_IT(huart, rcRxBuffer, DR16::DR16_FRAME_LENGTH); // start the next round of UART data reception
-        getRcConnected();
-
-        // reset the rcData if the data is invalid
-        if (!validateRcData()) {
-            resetRcData();
-            return;
-        }
-
-        // update the last updated time
-        lastUpdatedTime = HAL_GetTick();
-
-        /**
-         * @brief update the motor RPM here
-         * @todo implement the function
-         */
-        setRPM(rcData);
+    decodeRcData(); // decode the controller data to rcData
+    status = HAL_UARTEx_ReceiveToIdle_IT(huart, rcRxBuffer, DR16::DR16_FRAME_LENGTH); // start the next round of UART data reception
+    getRcConnected();
+    // reset the rcData if the data is invalid
+    if (!validateRcData()) {
+        resetRcData();
+        return;
     }
+
+    // update the last updated time
+    lastUpdatedTime = HAL_GetTick();
+
+    /**
+     * @brief update the motor RPM here
+     * @todo implement the function
+     */
+    setRPM(rcData);
 }
 
 bool getIsRcConnected() {
     uint32_t currentTime = HAL_GetTick();
     if ((lastUpdatedTime + 1000 > currentTime )) {
+        lastConnectedTime = currentTime;
         rcConnected = true;
-        return rcConnected;
+        
     } else {
         rcConnected = false;
         resetRcData();
-        return rcConnected;
     }
+    return rcConnected;
 }
 
 const bool *getRcConnected() {
@@ -195,14 +202,22 @@ void controlMotorRPM() {
     // motor2.setRPM(motorRPM.motor2);
     // motor3.setRPM(motorRPM.motor3);
 }
+void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
+    HAL_UART_Abort_IT(huart);
+
+    rcConnected = false;
+    resetRcData();
+    HAL_UARTEx_ReceiveToIdle_IT(huart, rcRxBuffer, DR16::DR16_FRAME_LENGTH);
+}
 
 /*================================================================================*/
 void init()
 {
     /*If you would like to, please implement your function definition here*/
     resetRcData();
+    huart1.ErrorCallback = HAL_UART_ErrorCallback;
     HAL_UART_RegisterRxEventCallback(&huart1, rxEventCallback);
-    HAL_UARTEx_ReceiveToIdle_IT(&huart1, rcRxBuffer, DR16_FRAME_LENGTH);
+    status = HAL_UARTEx_ReceiveToIdle_IT(&huart1, rcRxBuffer, DR16_FRAME_LENGTH);
 }
 
 }  // namespace DR16
