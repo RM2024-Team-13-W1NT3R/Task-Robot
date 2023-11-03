@@ -14,12 +14,23 @@ namespace DJIMotor
 DJIMotor motorFeedback[DJI_MOTOR_COUNT];
 
 uint32_t mailbox;
-uint8_t rxData[DJI_MOTOR_COUNT][8];
+uint8_t rxData[8];
 uint8_t txData[8];
 CAN_TxHeaderTypeDef txHeader = {0x200, 0, CAN_ID_STD, CAN_RTR_DATA, 8, DISABLE};
 CAN_RxHeaderTypeDef rxHeader;
 CAN_FilterTypeDef filter[DJI_MOTOR_COUNT];
-
+CAN_FilterTypeDef filterlist = {0x201 << 5,
+                 0x202 << 5,
+                 0x203 << 5,
+                 0x204 << 5,
+                 CAN_FILTER_FIFO0,
+                 0,
+                 CAN_FILTERMODE_IDLIST,
+                 CAN_FILTERSCALE_16BIT,
+                 CAN_FILTER_ENABLE,
+                 0};
+                 
+volatile HAL_StatusTypeDef status;
 /*========================================================*/
 // Your implementation of the function, or even your customized function, should
 // be implemented here
@@ -29,70 +40,81 @@ CAN_FilterTypeDef filter[DJI_MOTOR_COUNT];
  */
 void init()
 {
-    // for (uint32_t i = 0; i < DJI_MOTOR_COUNT; i++) {
-    filter[0] = {0x201 << 5,
-                 0,
-                 0,
-                 0,
-                 CAN_FILTER_FIFO0,
-                 0,
-                 CAN_FILTERMODE_IDLIST,
-                 CAN_FILTERSCALE_16BIT,
-                 CAN_FILTER_ENABLE,
-                 0};
-    filter[1] = {0x202 << 5,
-                 0,
-                 0,
-                 0,
-                 CAN_FILTER_FIFO0,
-                 0,
-                 CAN_FILTERMODE_IDLIST,
-                 CAN_FILTERSCALE_16BIT,
-                 CAN_FILTER_ENABLE,
-                 0};
-    filter[2] = {0x203 << 5,
-                 0,
-                 0,
-                 0,
-                 CAN_FILTER_FIFO0,
-                 0,
-                 CAN_FILTERMODE_IDLIST,
-                 CAN_FILTERSCALE_16BIT,
-                 CAN_FILTER_ENABLE,
-                 0};
-    filter[3] = {0x204 << 5,
-                 0,
-                 0,
-                 0,
-                 CAN_FILTER_FIFO0,
-                 0,
-                 CAN_FILTERMODE_IDLIST,
-                 CAN_FILTERSCALE_16BIT,
-                 CAN_FILTER_ENABLE,
-                 0};
-    // HAL_CAN_ConfigFilter(&hcan, &filter[0]);
+    // // for (uint32_t i = 0; i < DJI_MOTOR_COUNT; i++) {
+    // filter[0] = {0,
+    //              0x201 << 5,
+    //              0xFFFFFFFF,
+    //              0xFFFFFFFF,
+    //              CAN_FILTER_FIFO0,
+    //              0,
+    //              CAN_FILTERMODE_IDLIST,
+    //              CAN_FILTERSCALE_16BIT,
+    //              CAN_FILTER_ENABLE,
+    //              0};
+    // filter[1] = {0,
+    //              0,
+    //              0,
+    //              0xFFFFFFFF,
+    //              CAN_FILTER_FIFO0,
+    //              1,
+    //              CAN_FILTERMODE_IDLIST,
+    //              CAN_FILTERSCALE_16BIT,
+    //              CAN_FILTER_ENABLE,
+    //              0};
+    // filter[2] = {0,
+    //              0,
+    //              0,
+    //              0,
+    //              CAN_FILTER_FIFO0,
+    //              2,
+    //              CAN_FILTERMODE_IDLIST,
+    //              CAN_FILTERSCALE_16BIT,
+    //              CAN_FILTER_ENABLE,
+    //              0};
+    // filter[3] = {0x201 << 5,
+    //              0x202 << 5,
+    //              0x203 << 5,
+    //              0,
+    //              CAN_FILTER_FIFO0,
+    //              3,
+    //              CAN_FILTERMODE_IDLIST,
+    //              CAN_FILTERSCALE_16BIT,
+    //              CAN_FILTER_ENABLE,
+    //              0};
+    HAL_CAN_ConfigFilter(&hcan, &filterlist);
     HAL_CAN_Start(&hcan);
 }
+
 bool getRxMessage(uint16_t canID)
 {
-    HAL_CAN_ConfigFilter(&hcan, &filter[canID - 1]);
-    HAL_StatusTypeDef status =
-        HAL_CAN_GetRxMessage(&hcan, CAN_RX_FIFO0, &rxHeader, rxData[canID - 1]);
+    // HAL_CAN_Stop(&hcan);
+    // HAL_CAN_Start(&hcan);
+    status =
+        HAL_CAN_GetRxMessage(&hcan, CAN_RX_FIFO0, &rxHeader, rxData);
         //status = 0 means successfully receive, status = 1 means error
+
+
+    if (rxHeader.StdId != ((uint32_t) (0x200 + canID)))
+    {
+        status = HAL_ERROR;
+        return false; // receiving failed
+    }
+
+
     if (!status)
     {
         motorFeedback[canID - 1].canID = canID;
 
         motorFeedback[canID - 1].rotorAngle =
-            rxData[canID - 1][0] << 8 | rxData[canID - 1][1];
+            rxData[0] << 8 | rxData[1];
 
         motorFeedback[canID - 1].rpm =
-            rxData[canID - 1][2] << 8 | rxData[canID - 1][3];
+            rxData[2] << 8 | rxData[3];
 
         motorFeedback[canID - 1].torqueCurrent =
-            rxData[canID - 1][4] << 8 | rxData[canID - 1][5];
+            rxData[4] << 8 | rxData[5];
 
-        motorFeedback[canID - 1].temperature = rxData[canID - 1][6];
+        motorFeedback[canID - 1].temperature = rxData[6];
         return true; // receiving complete
     }
     return false; // receiving failed

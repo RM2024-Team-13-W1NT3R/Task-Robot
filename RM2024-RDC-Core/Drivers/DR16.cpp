@@ -24,7 +24,7 @@ uint32_t lastUpdatedTime;
 
 // Internal function declarations
 void setRPM(RcData);
-void limitRPM();
+void limitRPM(MotorRPM*);
 
 /*================================================================================*/
 /*You are free to declare your buffer, or implement your own function(callback, decoding) here*/
@@ -85,7 +85,6 @@ void rxEventCallback(UART_HandleTypeDef *huart, uint16_t datasize) {
          * @todo implement the function
          */
         setRPM(rcData);
-        limitRPM();
     }
 }
 
@@ -120,6 +119,7 @@ const float RPMConstant = maxMotorRPM / 10000;
 void setRPM(RcData originalData) {
     // Convert the channel data into a range between -100 and 100 because numbers like 1377 are ugly af
     // Also because we need an +- range to set voltage/RPM easily
+    MotorRPM updateRPM {};
     int robotRotation = (originalData.channel0 - 1024)/6.6;
     int idkwhatthischannelwillbeusedfor = (originalData.channel1 - 1024)/6.6;
     int robotHorizontal = (originalData.channel2 - 1024)/6.6;
@@ -146,10 +146,15 @@ void setRPM(RcData originalData) {
 
     // Add all of the motor controls together
     // MotorRPM motorRPM;
-    motorRPM.motor0 = motor0Horizontal + motor0Vertical + motor0Rotational;
-    motorRPM.motor1 = motor1Horizontal + motor1Vertical + motor1Rotational;
-    motorRPM.motor2 = motor2Horizontal + motor2Vertical + motor2Rotational;
-    motorRPM.motor3 = motor3Horizontal + motor3Vertical + motor3Rotational;
+    updateRPM.motor0 = motor0Horizontal + motor0Vertical + motor0Rotational;
+    updateRPM.motor1 = motor1Horizontal + motor1Vertical + motor1Rotational;
+    updateRPM.motor2 = motor2Horizontal + motor2Vertical + motor2Rotational;
+    updateRPM.motor3 = motor3Horizontal + motor3Vertical + motor3Rotational;
+    limitRPM(&updateRPM);
+    motorRPM.motor0 = updateRPM.motor0;
+    motorRPM.motor1 = updateRPM.motor1;
+    motorRPM.motor2 = updateRPM.motor2;
+    motorRPM.motor3 = updateRPM.motor3;
 }
 
 
@@ -158,24 +163,24 @@ void setRPM(RcData originalData) {
  * @brief Uses the global variable maxMotorRPM and MotorRPM struct
  * 
  */
-void limitRPM() {
+void limitRPM(MotorRPM* inputRPM) {
 
     // get the highest RPM
-    float maxRPM = Abs(motorRPM.motor0);
-    if (Abs(motorRPM.motor1) > maxRPM) {
-        maxRPM = motorRPM.motor1;
-    } else if (Abs(motorRPM.motor2) > maxRPM) {
-        maxRPM = motorRPM.motor2;
-    } else if (Abs(motorRPM.motor3) > maxRPM) {
-        maxRPM = motorRPM.motor3;
+    float maxRPM = Abs(inputRPM->motor0);
+    if (Abs(inputRPM->motor1) > maxRPM) {
+        maxRPM = inputRPM->motor1;
+    } else if (Abs(inputRPM->motor2) > maxRPM) {
+        maxRPM = inputRPM->motor2;
+    } else if (Abs(inputRPM->motor3) > maxRPM) {
+        maxRPM = inputRPM->motor3;
     }
-
+    maxRPM = Abs(maxRPM);
     // limit the RPM if it is higher than the maxMotorRPM
     if (maxRPM > maxMotorRPM) {
-        motorRPM.motor0 = motorRPM.motor0 / maxRPM * maxMotorRPM;
-        motorRPM.motor1 = motorRPM.motor1 / maxRPM * maxMotorRPM;
-        motorRPM.motor2 = motorRPM.motor2 / maxRPM * maxMotorRPM;
-        motorRPM.motor3 = motorRPM.motor3 / maxRPM * maxMotorRPM;
+        inputRPM->motor0 = inputRPM->motor0 / maxRPM * maxMotorRPM;
+        inputRPM->motor1 = inputRPM->motor1 / maxRPM * maxMotorRPM;
+        inputRPM->motor2 = inputRPM->motor2 / maxRPM * maxMotorRPM;
+        inputRPM->motor3 = inputRPM->motor3 / maxRPM * maxMotorRPM;
     }
 }
 

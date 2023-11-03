@@ -21,10 +21,11 @@ StackType_t uxPIDTaskStack[512];
 /*Declare the PCB for our PID task*/
 StaticTask_t xPIDTaskTCB;
 
-static volatile float kp = 20.0f;
-static volatile float ki = 10.0f;
+static volatile float kp = 5.0f;
+static volatile float ki = 1.0f;
 static volatile float kd = 0.0f;
-
+static volatile uint16_t canID = 0;
+Control::PID pid[4]{{kp, ki, kd}, {kp, ki, kd}, {kp, ki, kd}, {kp, ki, kd}};
 /**
  * @todo Show your control outcome of the M3508 motor as follows
  */
@@ -33,7 +34,7 @@ void userTask(void *)
     /* Your user layer codes begin here*/
     /*=================================================*/
 
-    Control::PID pid[4]{{kp, ki, kd}, {kp, ki, kd}, {kp, ki, kd}, {kp, ki, kd}};
+    
     /* Your user layer codes end here*/
     /*=================================================*/
     while (true)
@@ -41,13 +42,14 @@ void userTask(void *)
         /* Your user layer codes in loop begin here*/
         /*=================================================*/
         
-        for (uint16_t canID = 3; canID <= 4; canID++)
+        taskENTER_CRITICAL();
+        for (canID = 1; canID <= 4; canID++)
         {
             bool status = DJIMotor::getRxMessage(canID);
-            if (!status)
-            {
-                continue; // skip modulating when receiving data failed
-            }
+            // if (!status)
+            // {
+            //     continue; // skip modulating when receiving data failed
+            // }
 
             float targetRPM[4];
             switch (canID)
@@ -71,8 +73,10 @@ void userTask(void *)
                 pid[canID - 1].update(targetRPM[canID - 1], DJIMotor::getRPM(canID));
 
             DJIMotor::setOutput(targetCurrent, canID);
+
         }
         DJIMotor::transmit();
+        taskEXIT_CRITICAL();
         /* Your user layer codes in loop end here*/
         /*=================================================*/
 
