@@ -11,6 +11,7 @@
 #include "AppConfig.h"   // Include our customized configuration
 #include "DJIMotor.hpp"  // Include DR16
 #include "DR16.hpp"
+#include "ToFSensor.hpp"
 #include "FreeRTOS.h"  // Include FreeRTOS.h
 #include "PID.hpp"     // Include PID
 #include "main.h"
