@@ -78,7 +78,9 @@ Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_uart.c \
 Core/Src/system_stm32f1xx.c \
 Core/Src/tim.c \
 Core/Src/dma.c \
-Core/Src/stm32f1xx_hal_timebase_tim.c
+Core/Src/stm32f1xx_hal_timebase_tim.c \
+Core/Src/i2c.c \
+Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_i2c.c
 
 # CPP sources
 CPP_SOURCES =  \
