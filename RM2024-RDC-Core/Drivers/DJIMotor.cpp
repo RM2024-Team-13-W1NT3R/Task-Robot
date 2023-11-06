@@ -40,47 +40,6 @@ volatile HAL_StatusTypeDef status;
  */
 void init()
 {
-    // // for (uint32_t i = 0; i < DJI_MOTOR_COUNT; i++) {
-    // filter[0] = {0,
-    //              0x201 << 5,
-    //              0xFFFFFFFF,
-    //              0xFFFFFFFF,
-    //              CAN_FILTER_FIFO0,
-    //              0,
-    //              CAN_FILTERMODE_IDLIST,
-    //              CAN_FILTERSCALE_16BIT,
-    //              CAN_FILTER_ENABLE,
-    //              0};
-    // filter[1] = {0,
-    //              0,
-    //              0,
-    //              0xFFFFFFFF,
-    //              CAN_FILTER_FIFO0,
-    //              1,
-    //              CAN_FILTERMODE_IDLIST,
-    //              CAN_FILTERSCALE_16BIT,
-    //              CAN_FILTER_ENABLE,
-    //              0};
-    // filter[2] = {0,
-    //              0,
-    //              0,
-    //              0,
-    //              CAN_FILTER_FIFO0,
-    //              2,
-    //              CAN_FILTERMODE_IDLIST,
-    //              CAN_FILTERSCALE_16BIT,
-    //              CAN_FILTER_ENABLE,
-    //              0};
-    // filter[3] = {0x201 << 5,
-    //              0x202 << 5,
-    //              0x203 << 5,
-    //              0,
-    //              CAN_FILTER_FIFO0,
-    //              3,
-    //              CAN_FILTERMODE_IDLIST,
-    //              CAN_FILTERSCALE_16BIT,
-    //              CAN_FILTER_ENABLE,
-    //              0};
     HAL_CAN_ConfigFilter(&hcan, &filterlist);
     HAL_CAN_Start(&hcan);
 }
