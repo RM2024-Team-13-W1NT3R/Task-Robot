@@ -125,19 +125,19 @@ void setRPM(RcData originalData) {
     // Convert the channel data into a range between -100 and 100
     // Also allows us to set the RPM easier with positive and negative numbers
     MotorRPM updateRPM {};
-    int robotRotation = (originalData.channel0 - 1024)/6.6;
-    int idkwhatthischannelwillbeusedfor = (originalData.channel1 - 1024)/6.6;
-    int robotHorizontal = (originalData.channel2 - 1024)/6.6;
-    int robotVertical = (originalData.channel3 - 1024)/6.6;
+    float robotRotation = (originalData.channel0 - 1024)/6.6;
+    float idkwhatthischannelwillbeusedfor = (originalData.channel1 - 1024)/6.6;
+    float robotHorizontal = (originalData.channel2 - 1024)/6.6;
+    float robotVertical = (originalData.channel3 - 1024)/6.6;
 
     // Forward and Backwards (Vertical) Motion, forward = positive
-    int motorVertical = robotVertical * robotVertical * RPMConstant;
+    float motorVertical = robotVertical * robotVertical * RPMConstant;
 
     // Left and Right (Horizontal) Motion, right = positive
-    int motorHorizontal = robotHorizontal * robotHorizontal * RPMConstant;
+    float motorHorizontal = robotHorizontal * robotHorizontal * RPMConstant;
 
     // Rotational Motion, clockwise = positive
-    int motorRotational = robotRotation * robotRotation * RPMConstant;
+    float motorRotational = robotRotation * robotRotation * RPMConstant;
 
     // Add all of the motor controls together
     updateRPM.motor0 =   motorHorizontal + motorVertical + motorRotational;
