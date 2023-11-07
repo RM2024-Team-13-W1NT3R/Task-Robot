@@ -64,7 +64,7 @@
  * @file  vl53l1x_api.h
  * @brief Functions definition
  */
-
+#pragma once
 #ifndef _API_H_
 #define _API_H_
 

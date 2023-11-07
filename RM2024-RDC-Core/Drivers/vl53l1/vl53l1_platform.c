@@ -33,17 +33,15 @@
 * 
 */
 
-
 #include "vl53l1_platform.h"
 #include "vl53l1_platform_log.h"
 //#include "vl53l1_api.h"
 #include "vl53l1_platform_user_config.h"
-#include "stm32xxx_hal.h"
+#include "stm32f1xx_hal.h"
 #include <string.h>
 #include <time.h>
 #include <math.h>
 #include "vl53l1_error_codes.h"
-#include "X-NUCLEO-53L1A1.h"
 
 
 #define I2C_TIME_OUT_BASE   10

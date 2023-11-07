@@ -125,7 +125,8 @@ include $(SystemView_PATH)/SystemView.mk
 CORE_DIR = RM2024-RDC-Core
 include $(CORE_DIR)/$(CORE_DIR).mk
 
-C_SOURCES += $(C_SRC) $(FreeRTOS_SRC) $(SystemView_SRC)
+C_SOURCES += $(FreeRTOS_SRC) $(SystemView_SRC)
+# C_SOURCES += $(FreeRTOS_SRC) $(SystemView_SRC)
 CPP_SOURCES += $(FreeRTOS_PATH)/sources/os.cpp
 ASM_SOURCES += $(AS_SRC) $(SystemView_AS_SRC)
 C_DEFS += -DAPP_NAME=$(TARGET)

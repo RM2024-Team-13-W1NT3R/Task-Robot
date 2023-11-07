@@ -63,7 +63,7 @@
  * @file  vl53l1x_calibration.h
  * @brief Calibration Functions definition
  */
-
+#pragma once
 #ifndef _CALIBRATION_H_
 #define _CALIBRATION_H_
 

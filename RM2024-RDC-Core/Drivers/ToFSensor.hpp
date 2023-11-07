@@ -8,13 +8,14 @@
 #pragma once
 
 #include "stdint.h"
-#include "vl35l1/VL53L1X_api.h"
+#include "vl53l1/VL53L1X_api.h"
 #include "i2c.h"
 #include "stm32f1xx_hal.h"
-namespace TofSensor 
+namespace ToFSensor 
 {
 
 
 void init();
+uint16_t getDistance();
 
 }

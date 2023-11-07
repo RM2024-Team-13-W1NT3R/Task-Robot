@@ -29,7 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @file  vl53l1_types.h
  * @brief VL53L1 types definition
  */
-
+#pragma once
 #ifndef _VL53L1_TYPES_H_
 #define _VL53L1_TYPES_H_
 

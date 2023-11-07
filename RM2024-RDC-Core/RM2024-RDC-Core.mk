@@ -3,19 +3,22 @@
 #######################################
 # C Sources
 C_SRC = 
+C_SRC += \
+$(wildcard $(CORE_DIR)/Drivers/vl53l1/*.c)
 
 # C++ Sources
 CPP_SRC =  
 
 
 CPP_SRC += \
-$(wildcard $(CORE_DIR)/Control/*.cpp) \
 $(wildcard $(CORE_DIR)/Drivers/*.cpp) \
+$(wildcard $(CORE_DIR)/Control/*.cpp) \
 $(wildcard $(CORE_DIR)/Communication/*.cpp) \
-$(wildcard $(CORE_DIR)/Utils/*.cpp)
+$(wildcard $(CORE_DIR)/Utils/*.cpp) \
+
 
 O_SRC += \
-$(wildcard $(CORE_DIR)/Drivers/*.o) 
+$(wildcard $(CORE_DIR)/Drivers/*.o) \
 
 
 # ASM Sources
@@ -42,7 +45,8 @@ AS_INC =
 # Includes
 INC =  \
 -I$(CORE_DIR)/Control \
--I$(CORE_DIR)/Drivers  
+-I$(CORE_DIR)/Drivers \
+-I$(CORE_DIR)/Drivers/vl53l1 \
 
 #######################################
 # Add to makefile

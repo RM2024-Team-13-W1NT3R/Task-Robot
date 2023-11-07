@@ -89,7 +89,23 @@ void userTask(void *)
 /**
  * @todo In case you like it, please implement your own tasks
  */
+void userTaskToF(void *)
+{
+    /* Your user layer codes begin here*/
+    /*=================================================*/
 
+    
+    /* Your user layer codes end here*/
+    /*=================================================*/
+    while (true)
+    {
+
+        /* Your user layer codes in loop begin here*/
+        /*=================================================*/
+        ToFSensor::getDistance();
+        vTaskDelay(1);  // Delay and block the task for 1ms.
+    }
+}
 /**
  * @brief Intialize all the drivers and add task to the scheduler
  * @todo  Add your own task in this file
@@ -98,7 +114,7 @@ void startUserTasks()
 {
     DJIMotor::init();  // Initalize the DJIMotor driver
     DR16::init();      // Intialize the DR16 driver
-
+    ToFSensor::init();
     xTaskCreateStatic(userTask,
                       "user_default ",
                       configMINIMAL_STACK_SIZE,
