@@ -8,5 +8,13 @@
 
 namespace AutoTrack 
 {
-    void startAutoTrack();
+
+bool setInitialHorizontalDistance();
+
+void adjustForHorizontalMovement();
+
+bool checkIfArrived();
+
+void executeMovement();
+
 }

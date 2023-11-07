@@ -8,7 +8,7 @@ VL53L1X_ERROR status;
 
 uint16_t deviceAddress = 0x53;
 
-static uint16_t measureRate;
+uint16_t measureRate;
 
 uint16_t* getMeasureRate() {
     status = VL53L1X_GetSignalRate(deviceAddress, &measureRate);

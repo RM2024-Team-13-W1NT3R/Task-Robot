@@ -114,7 +114,7 @@ void autoTrack(void *)
 {
     /* Your user layer codes begin here*/
     /*=================================================*/
-    AutoTrack::setInitialHorizontalDistance();
+    while (!AutoTrack::setInitialHorizontalDistance()) {}
     
     /* Your user layer codes end here*/
     /*=================================================*/
