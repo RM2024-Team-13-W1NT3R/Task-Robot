@@ -4,7 +4,6 @@
 # C Sources
 C_SRC = 
 C_SRC += \
-$(wildcard $(CORE_DIR)/Drivers/vl53l1/*.c)
 
 # C++ Sources
 CPP_SRC =  
@@ -15,6 +14,7 @@ $(wildcard $(CORE_DIR)/Drivers/*.cpp) \
 $(wildcard $(CORE_DIR)/Control/*.cpp) \
 $(wildcard $(CORE_DIR)/Communication/*.cpp) \
 $(wildcard $(CORE_DIR)/Utils/*.cpp) \
+$(wildcard $(CORE_DIR)/Drivers/vl53l1/*.cpp) \
 
 
 O_SRC += \

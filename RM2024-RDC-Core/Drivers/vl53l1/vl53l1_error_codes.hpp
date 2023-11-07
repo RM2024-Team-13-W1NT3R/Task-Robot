@@ -70,7 +70,7 @@
 #ifndef _VL53L1_ERROR_CODES_H_
 #define _VL53L1_ERROR_CODES_H_
 
-#include "vl53l1_types.h"
+#include "vl53l1_types.hpp"
 
 #ifdef __cplusplus
 extern "C" {
