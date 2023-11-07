@@ -9,13 +9,12 @@
 
 #include "stdint.h"
 #include "vl35l1/VL53L1X_api.h"
-
-namespace Control 
+#include "i2c.h"
+#include "stm32f1xx_hal.h"
+namespace TofSensor 
 {
 
 
 void init();
-
-void getBootState(uint16_t device);
 
 }

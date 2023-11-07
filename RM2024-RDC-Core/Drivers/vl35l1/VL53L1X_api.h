@@ -69,7 +69,7 @@
 #define _API_H_
 
 #include "vl53l1_platform.h"
-
+#include "vl53l1_error_codes.h"
 #define VL53L1X_IMPLEMENTATION_VER_MAJOR       3
 #define VL53L1X_IMPLEMENTATION_VER_MINOR       5
 #define VL53L1X_IMPLEMENTATION_VER_SUB         2
