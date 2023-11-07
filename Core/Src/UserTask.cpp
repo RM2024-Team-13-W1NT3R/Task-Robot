@@ -16,6 +16,7 @@
 #include "PID.hpp"     // Include PID
 #include "main.h"
 #include "task.h"  // Include task
+#include "AutoTrack.hpp"
 
 /*Allocate the stack for our PID task*/
 StackType_t uxPIDTaskStack[512];
@@ -81,7 +82,9 @@ void userTask(void *)
         taskEXIT_CRITICAL();
         /* Your user layer codes in loop end here*/
         /*=================================================*/
-
+        if (true) {
+            //start AutoTrack
+        }
         vTaskDelay(1);  // Delay and block the task for 1ms.
     }
 }
@@ -89,23 +92,46 @@ void userTask(void *)
 /**
  * @todo In case you like it, please implement your own tasks
  */
-void userTaskToF(void *)
+// void userTaskToF(void *)
+// {
+//     /* Your user layer codes begin here*/
+//     /*=================================================*/
+
+    
+//     /* Your user layer codes end here*/
+//     /*=================================================*/
+//     while (true)
+//     {
+
+//         /* Your user layer codes in loop begin here*/
+//         /*=================================================*/
+//         ToFSensor::getDistance();
+//         vTaskDelay(1);  // Delay and block the task for 1ms.
+//     }
+// }
+
+void autoTrack(void *)
 {
     /* Your user layer codes begin here*/
     /*=================================================*/
-
+    AutoTrack::setInitialHorizontalDistance();
     
     /* Your user layer codes end here*/
     /*=================================================*/
-    while (true)
+    while (AutoTrack::checkIfArrived())
     {
-
         /* Your user layer codes in loop begin here*/
         /*=================================================*/
-        ToFSensor::getDistance();
+
+        AutoTrack::adjustForHorizontalMovement();
+        AutoTrack::executeMovement();
+        if (false) { //if arrived
+            break;
+        }
         vTaskDelay(1);  // Delay and block the task for 1ms.
     }
 }
+
 /**
  * @brief Intialize all the drivers and add task to the scheduler
  * @todo  Add your own task in this file

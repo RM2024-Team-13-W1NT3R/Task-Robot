@@ -16,6 +16,10 @@ namespace ToFSensor
 
 
 void init();
-uint16_t getDistance();
+bool getDistance(uint16_t*);
+
+extern uint16_t measureRate;
+
+uint16_t* getMeasureRate();
 
 }
