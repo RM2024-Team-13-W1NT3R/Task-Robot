@@ -117,7 +117,7 @@ bool getRxMessage(uint16_t canID)
         motorFeedback[canID - 1].temperature = rxData[6];
         return true; // receiving complete
     }
-    return false; // receiving failed
+    return false; // receiving failed 
 }
 /**
  * @todo
@@ -128,7 +128,7 @@ float getEncoder(uint16_t canID) { return motorFeedback[canID - 1].rotorAngle; }
  * @todo
  */
 float getRPM(uint16_t canID) { return motorFeedback[canID - 1].rpm; }
-
+ 
 /**
  * @todo
  */
