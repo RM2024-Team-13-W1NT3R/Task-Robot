@@ -27,6 +27,8 @@ static HAL_StatusTypeDef status;
 
 float maxMotorRPM = 9000;
 
+bool autoTrackEnabled = False;
+
 // Internal function declarations
 void setRPM(RcData);
 void limitRPM(MotorRPM*);
@@ -124,44 +126,57 @@ const float RPMConstant = maxMotorRPM / 10000;
  * @brief Max output of 1 channel should roughly give the maxRPM for optimal efficiency and control
 */
 void setRPM(RcData originalData) {
-    // Convert the channel data into a range between -100 and 100 because numbers like 1377 are ugly af
-    // Also because we need an +- range to set voltage/RPM easily
+    // Convert the channel data into a range between -100 and 100
+    // Also allows us to set the RPM easier with positive and negative numbers
     MotorRPM updateRPM {};
-    int robotRotation = (originalData.channel0 - 1024)/6.6;
-    int idkwhatthischannelwillbeusedfor = (originalData.channel1 - 1024)/6.6;
-    int robotHorizontal = (originalData.channel2 - 1024)/6.6;
-    int robotVertical = (originalData.channel3 - 1024)/6.6;
+    float robotRotation = (originalData.channel0 - 1024)/6.6;
+    float idkwhatthischannelwillbeusedfor = (originalData.channel1 - 1024)/6.6;
+    float robotHorizontal = (originalData.channel2 - 1024)/6.6;
+    float robotVertical = (originalData.channel3 - 1024)/6.6;
 
     // Forward and Backwards (Vertical) Motion, forward = positive
-    int motor0Vertical = robotVertical * Abs(robotVertical) * RPMConstant;
-    int motor1Vertical = - robotVertical * Abs(robotVertical) * RPMConstant;
-    int motor2Vertical = robotVertical * Abs(robotVertical) * RPMConstant;
-    int motor3Vertical = - robotVertical * Abs(robotVertical) * RPMConstant;
+    float motorVertical = robotVertical * robotVertical * RPMConstant;
 
     // Left and Right (Horizontal) Motion, right = positive
-    int motor0Horizontal = robotHorizontal * Abs(robotHorizontal) * RPMConstant;
-    int motor1Horizontal = robotHorizontal * Abs(robotHorizontal) * RPMConstant;
-    int motor2Horizontal = - robotHorizontal * Abs(robotHorizontal) * RPMConstant;
-    int motor3Horizontal = - robotHorizontal * Abs(robotHorizontal) * RPMConstant;
+    float motorHorizontal = robotHorizontal * robotHorizontal * RPMConstant;
 
     // Rotational Motion, clockwise = positive
-    int motor0Rotational = robotRotation * Abs(robotRotation) * RPMConstant;
-    int motor1Rotational = robotRotation * Abs(robotRotation) * RPMConstant;
-    int motor2Rotational = robotRotation * Abs(robotRotation) * RPMConstant;
-    int motor3Rotational = robotRotation * Abs(robotRotation) * RPMConstant;
+    float motorRotational = robotRotation * robotRotation * RPMConstant;
+    if (originalData.s2 == 2) {
+        autoTrackEnabled = false;
 
+        // Add all of the motor controls together
+        // The motor controls are added differently depending on the switch position
+        // 1: Forward Mode | 2: Robotic Arm Mode | 3: Reverse Mode
+        if (originalData.s1 == 1) {
+            updateRPM.motor0 =   motorHorizontal + motorVertical + motorRotational;
+            updateRPM.motor1 = - motorHorizontal + motorVertical + motorRotational;
+            updateRPM.motor2 =   motorHorizontal - motorVertical + motorRotational;
+            updateRPM.motor3 = - motorHorizontal - motorVertical + motorRotational;
+        } else if (originalData.s1 == 2)
+        {
+            // turn on the robotic arm
+            // 3 channels needed
+            // up and down
+            // rotate up and down
+            // open and close
+            continue;
+        } else if (originalData.s1 == 3) {
+            updateRPM.motor0 = - motorHorizontal - motorVertical + motorRotational;
+            updateRPM.motor1 =   motorHorizontal - motorVertical + motorRotational;
+            updateRPM.motor2 = - motorHorizontal + motorVertical + motorRotational;
+            updateRPM.motor3 =   motorHorizontal + motorVertical + motorRotational;
+        }
 
-    // Add all of the motor controls together
-    // MotorRPM motorRPM;
-    updateRPM.motor0 = motor0Horizontal + motor0Vertical + motor0Rotational;
-    updateRPM.motor1 = motor1Horizontal + motor1Vertical + motor1Rotational;
-    updateRPM.motor2 = motor2Horizontal + motor2Vertical + motor2Rotational;
-    updateRPM.motor3 = motor3Horizontal + motor3Vertical + motor3Rotational;
-    limitRPM(&updateRPM);
-    motorRPM.motor0 = updateRPM.motor0;
-    motorRPM.motor1 = updateRPM.motor1;
-    motorRPM.motor2 = updateRPM.motor2;
-    motorRPM.motor3 = updateRPM.motor3;
+        // Limit the calculated values and transmit to the motors
+        limitRPM(&updateRPM);
+        motorRPM.motor0 = updateRPM.motor0;
+        motorRPM.motor1 = updateRPM.motor1;
+        motorRPM.motor2 = updateRPM.motor2;
+        motorRPM.motor3 = updateRPM.motor3;
+    } else if (originalData.s2 == 1 || originalData.s2 == 3) {
+        autoTrackEnabled = true;
+    }
 }
 
 

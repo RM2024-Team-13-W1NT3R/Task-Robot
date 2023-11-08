@@ -22,12 +22,18 @@
 StackType_t uxPIDTaskStack[512];
 /*Declare the PCB for our PID task*/
 StaticTask_t xPIDTaskTCB;
+/*Allocate the stack for our Auto Track task*/
+StackType_t uxAutoTaskStack[512];
+/*Declare the PCB for our Auto Track task*/
+StaticTask_t xAutoTaskTCB;
 
 static volatile float kp = 5.0f;
 static volatile float ki = 1.0f;
 static volatile float kd = 0.025f;
 static volatile uint16_t canID = 0;
 Control::PID pid[4]{{kp, ki, kd}, {kp, ki, kd}, {kp, ki, kd}, {kp, ki, kd}};
+
+extern bool autoTrackEnabled; //defined in DR16.cpp line 30
 /**
  * @todo Show your control outcome of the M3508 motor as follows
  */
@@ -39,7 +45,7 @@ void userTask(void *)
     
     /* Your user layer codes end here*/
     /*=================================================*/
-    while (true)
+    while (!autoTrackEnabled)
     {
 
         /* Your user layer codes in loop begin here*/
@@ -114,11 +120,15 @@ void autoTrack(void *)
 {
     /* Your user layer codes begin here*/
     /*=================================================*/
-    while (!AutoTrack::setInitialHorizontalDistance()) {}
+
+    // what does this do?
+    // while (!AutoTrack::setInitialHorizontalDistance()) {}
     
     /* Your user layer codes end here*/
     /*=================================================*/
-    while (AutoTrack::checkIfArrived())
+    // while (AutoTrack::checkIfArrived())
+
+    while (autoTrackEnabled)
     {
         /* Your user layer codes in loop begin here*/
         /*=================================================*/
@@ -148,6 +158,15 @@ void startUserTasks()
                       15,
                       uxPIDTaskStack,
                       &xPIDTaskTCB);  // Add the main task into the scheduler
+    xTaskCreateStatic(autoTrack,
+                      "auto_track",
+                      configMINIMAL_STACK_SIZE,
+                      NULL,
+                      15,
+                      uxAutoTaskStack,
+                      &xAutoTaskTCB);  // Add the auto track task into the scheduler
+
+    )
     /**
      * @todo Add your own task here
      */
