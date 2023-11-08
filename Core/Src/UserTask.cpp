@@ -23,7 +23,7 @@ StaticTask_t xPIDTaskTCB;
 
 static volatile float kp = 5.0f;
 static volatile float ki = 1.0f;
-static volatile float kd = 0.0f;
+static volatile float kd = 0.025f;
 static volatile uint16_t canID = 0;
 Control::PID pid[4]{{kp, ki, kd}, {kp, ki, kd}, {kp, ki, kd}, {kp, ki, kd}};
 /**
@@ -39,9 +39,10 @@ void userTask(void *)
     /*=================================================*/
     while (true)
     {
+
         /* Your user layer codes in loop begin here*/
         /*=================================================*/
-        
+        DR16::getRcConnected();
         taskENTER_CRITICAL();
         for (canID = 1; canID <= 4; canID++)
         {

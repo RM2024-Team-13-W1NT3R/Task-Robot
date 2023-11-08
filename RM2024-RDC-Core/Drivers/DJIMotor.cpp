@@ -40,47 +40,6 @@ volatile HAL_StatusTypeDef status;
  */
 void init()
 {
-    // // for (uint32_t i = 0; i < DJI_MOTOR_COUNT; i++) {
-    // filter[0] = {0,
-    //              0x201 << 5,
-    //              0xFFFFFFFF,
-    //              0xFFFFFFFF,
-    //              CAN_FILTER_FIFO0,
-    //              0,
-    //              CAN_FILTERMODE_IDLIST,
-    //              CAN_FILTERSCALE_16BIT,
-    //              CAN_FILTER_ENABLE,
-    //              0};
-    // filter[1] = {0,
-    //              0,
-    //              0,
-    //              0xFFFFFFFF,
-    //              CAN_FILTER_FIFO0,
-    //              1,
-    //              CAN_FILTERMODE_IDLIST,
-    //              CAN_FILTERSCALE_16BIT,
-    //              CAN_FILTER_ENABLE,
-    //              0};
-    // filter[2] = {0,
-    //              0,
-    //              0,
-    //              0,
-    //              CAN_FILTER_FIFO0,
-    //              2,
-    //              CAN_FILTERMODE_IDLIST,
-    //              CAN_FILTERSCALE_16BIT,
-    //              CAN_FILTER_ENABLE,
-    //              0};
-    // filter[3] = {0x201 << 5,
-    //              0x202 << 5,
-    //              0x203 << 5,
-    //              0,
-    //              CAN_FILTER_FIFO0,
-    //              3,
-    //              CAN_FILTERMODE_IDLIST,
-    //              CAN_FILTERSCALE_16BIT,
-    //              CAN_FILTER_ENABLE,
-    //              0};
     HAL_CAN_ConfigFilter(&hcan, &filterlist);
     HAL_CAN_Start(&hcan);
 }
@@ -132,7 +91,7 @@ float getRPM(uint16_t canID) { return motorFeedback[canID - 1].rpm; }
 /**
  * @todo
  */
-void setOutput(int16_t output, uint16_t canID)
+void setOutput(float output, uint16_t canID)
 {
     if (output > maxCurrent)
     {
@@ -142,9 +101,10 @@ void setOutput(int16_t output, uint16_t canID)
     {
         output = -maxCurrent;
     }
-    uint8_t mask                = 0xff;
-    txData[(canID - 1) * 2 + 1] = mask & output;
-    txData[(canID - 1) * 2]     = output >> 8;
+    // uint8_t mask                = 0xff;
+    txData[(canID - 1) * 2 + 1] = (static_cast<int> (output));
+    txData[(canID - 1) * 2]     = (static_cast<int> (output) >> 8);
+    //why casting to int??
 }
 
 /**

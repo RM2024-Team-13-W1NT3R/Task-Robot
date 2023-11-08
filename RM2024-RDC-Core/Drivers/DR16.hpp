@@ -16,7 +16,6 @@
 namespace DR16
 {
 
-const float maxMotorRPM = 800;
 
 /**
  * @brief the DR16 remote controller structure

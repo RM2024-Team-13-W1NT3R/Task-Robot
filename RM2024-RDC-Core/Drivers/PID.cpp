@@ -14,6 +14,13 @@ float PID::update(float target, float measurement, float dt)
 
     iOut += Ki * error * dt;
 
+    // Limit the integral to prevent huge overshoot when quickly switching between the max values
+    if (iOut > 1000) {
+        iOut = 1000;
+    } else if (iOut < -1000) {
+        iOut = -1000;
+    }
+
     dOut = Kd * (error - lastError) / dt;
 
     output = pOut + iOut + dOut;
