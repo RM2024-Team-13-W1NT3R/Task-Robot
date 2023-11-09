@@ -152,8 +152,8 @@ void autoTrack(void *)
 void startUserTasks()
 {
     DJIMotor::init();  // Initalize the DJIMotor driver
-    DR16::init();      // Intialize the DR16 driver
-    // ToFSensor::init();
+    // DR16::init();      // Intialize the DR16 driver
+    ToFSensor::init();
     xTaskCreateStatic(userTask,
                       "user_default ",
                       configMINIMAL_STACK_SIZE,

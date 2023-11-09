@@ -11,6 +11,7 @@
 #include "vl53l1/VL53L1X_api.hpp"
 #include "i2c.h"
 #include "stm32f1xx_hal.h"
+#include "usart.h"
 namespace ToFSensor 
 {
 
