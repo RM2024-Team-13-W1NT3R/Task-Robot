@@ -21,7 +21,7 @@ StackType_t uxPIDTaskStack[512];
 /*Declare the PCB for our PID task*/
 StaticTask_t xPIDTaskTCB;
 
-static volatile float kp = 5.0f;
+static volatile float kp = 1.0f;
 static volatile float ki = 1.0f;
 static volatile float kd = 0.025f;
 static volatile uint16_t canID = 0;

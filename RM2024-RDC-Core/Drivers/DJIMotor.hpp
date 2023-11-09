@@ -40,6 +40,7 @@ namespace DJIMotor
 
 
 // const int16_t maxRPM = 3000;
+// const int16_t maxCurrent = 16384;
 const int16_t maxCurrent = 16384;
 
 
