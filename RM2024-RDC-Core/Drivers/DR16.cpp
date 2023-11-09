@@ -125,25 +125,36 @@ void setRPM(RcData originalData) {
     // Convert the channel data into a range between -100 and 100
     // Also allows us to set the RPM easier with positive and negative numbers
     MotorRPM updateRPM {};
-    float robotRotation = (originalData.channel0 - 1024)/6.6;
-    float idkwhatthischannelwillbeusedfor = (originalData.channel1 - 1024)/6.6;
-    float robotHorizontal = (originalData.channel2 - 1024)/6.6;
-    float robotVertical = (originalData.channel3 - 1024)/6.6;
+    int robotRotation = (originalData.channel0 - 1024)/6.6;
+    int idkwhatthischannelwillbeusedfor = (originalData.channel1 - 1024)/6.6;
+    int robotHorizontal = (originalData.channel2 - 1024)/6.6;
+    int robotVertical = (originalData.channel3 - 1024)/6.6;
 
     // Forward and Backwards (Vertical) Motion, forward = positive
-    float motorVertical = robotVertical * robotVertical * RPMConstant;
+    int motor0Vertical = robotVertical * Abs(robotVertical) * RPMConstant;
+    int motor1Vertical = - robotVertical * Abs(robotVertical) * RPMConstant;
+    int motor2Vertical = robotVertical * Abs(robotVertical) * RPMConstant;
+    int motor3Vertical = - robotVertical * Abs(robotVertical) * RPMConstant;
 
     // Left and Right (Horizontal) Motion, right = positive
-    float motorHorizontal = robotHorizontal * robotHorizontal * RPMConstant;
+    int motor0Horizontal = robotHorizontal * Abs(robotHorizontal) * RPMConstant;
+    int motor1Horizontal = robotHorizontal * Abs(robotHorizontal) * RPMConstant;
+    int motor2Horizontal = - robotHorizontal * Abs(robotHorizontal) * RPMConstant;
+    int motor3Horizontal = - robotHorizontal * Abs(robotHorizontal) * RPMConstant;
 
     // Rotational Motion, clockwise = positive
-    float motorRotational = robotRotation * robotRotation * RPMConstant;
+    int motor0Rotational = robotRotation * Abs(robotRotation) * RPMConstant;
+    int motor1Rotational = robotRotation * Abs(robotRotation) * RPMConstant;
+    int motor2Rotational = robotRotation * Abs(robotRotation) * RPMConstant;
+    int motor3Rotational = robotRotation * Abs(robotRotation) * RPMConstant;
+
 
     // Add all of the motor controls together
-    updateRPM.motor0 =   motorHorizontal + motorVertical + motorRotational;
-    updateRPM.motor1 = - motorHorizontal + motorVertical + motorRotational;
-    updateRPM.motor2 =   motorHorizontal - motorVertical + motorRotational;
-    updateRPM.motor3 = - motorHorizontal - motorVertical + motorRotational;
+    // MotorRPM motorRPM;
+    updateRPM.motor0 = motor0Horizontal + motor0Vertical + motor0Rotational;
+    updateRPM.motor1 = motor1Horizontal + motor1Vertical + motor1Rotational;
+    updateRPM.motor2 = motor2Horizontal + motor2Vertical + motor2Rotational;
+    updateRPM.motor3 = motor3Horizontal + motor3Vertical + motor3Rotational;
 
     // Limit the calculated values and transmit to the motors
     limitRPM(&updateRPM);
