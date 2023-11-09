@@ -17,6 +17,7 @@ namespace DR16
 {
 
 extern bool autoTrackEnabled; 
+extern bool leftWallMode;
 
 /**
  * @brief the DR16 remote controller structure

@@ -5,16 +5,16 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "PID.hpp"
-
+#include "DR16.hpp"
 namespace AutoTrack 
 {
-
-bool setInitialHorizontalDistance();
 
 void adjustForHorizontalMovement();
 
 bool checkIfArrived();
 
 void executeMovement();
+
+bool setLeftWallMode(bool mode);
 
 }

@@ -15,12 +15,17 @@ uint16_t* getMeasureRate() {
     return &measureRate;
 }
 
+static volatile uint32_t testCode = 0;
 
 void init() {
+    testCode = 1;
     while (!bootState) {
+        testCode = 2;
         HAL_Delay(2);
         status =  VL53L1X_BootState(deviceAddress, &bootState);
     }
+    
+    testCode = 3;
     VL53L1X_SensorInit(deviceAddress);
     status = VL53L1X_SetDistanceMode(deviceAddress, 1); /* 1=short, 2=long */
     status = VL53L1X_SetTimingBudgetInMs(deviceAddress, 100); /* in ms possible values [20, 50, 100, 200, 500] */

@@ -104,6 +104,7 @@ void setOutput(float output, uint16_t canID)
     // uint8_t mask                = 0xff;
     txData[(canID - 1) * 2 + 1] = (static_cast<int> (output));
     txData[(canID - 1) * 2]     = (static_cast<int> (output) >> 8);
+    //why casting to int??
 }
 
 /**

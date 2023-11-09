@@ -27,6 +27,8 @@ StackType_t uxAutoTaskStack[512];
 /*Declare the PCB for our Auto Track task*/
 StaticTask_t xAutoTaskTCB;
 
+static volatile uint64_t nowRunningTask = 99;
+
 static volatile float kp = 5.0f;
 static volatile float ki = 1.0f;
 static volatile float kd = 0.025f;
@@ -44,51 +46,54 @@ void userTask(void *)
     
     /* Your user layer codes end here*/
     /*=================================================*/
-    while (!DR16::autoTrackEnabled)
-    {
-
-        /* Your user layer codes in loop begin here*/
-        /*=================================================*/
-        DR16::getRcConnected();
-        taskENTER_CRITICAL();
-        for (canID = 1; canID <= 4; canID++)
+    while (true) {
+        while (!DR16::autoTrackEnabled)
         {
-            bool status = DJIMotor::getRxMessage(canID);
-            // if (!status)
-            // {
-            //     continue; // skip modulating when receiving data failed
-            // }
+            nowRunningTask = 0;
 
-            float targetRPM[4];
-            switch (canID)
+            /* Your user layer codes in loop begin here*/
+            /*=================================================*/
+            DR16::getRcConnected();
+            taskENTER_CRITICAL();
+            for (canID = 1; canID <= 4; canID++)
             {
-            case 1:
-                targetRPM[0] = DR16::getMotorRPM()->motor0;
-                break;
-            case 2:
-                targetRPM[1] = DR16::getMotorRPM()->motor1;
-                break;
-            case 3:
-                targetRPM[2] = DR16::getMotorRPM()->motor2;
-                break;
-            case 4:
-                targetRPM[3] = DR16::getMotorRPM()->motor3;
-                break;
-            default:
-                break;
+                bool status = DJIMotor::getRxMessage(canID);
+                // if (!status)
+                // {
+                //     continue; // skip modulating when receiving data failed
+                // }
+
+                float targetRPM[4];
+                switch (canID)
+                {
+                case 1:
+                    targetRPM[0] = DR16::getMotorRPM()->motor0;
+                    break;
+                case 2:
+                    targetRPM[1] = DR16::getMotorRPM()->motor1;
+                    break;
+                case 3:
+                    targetRPM[2] = DR16::getMotorRPM()->motor2;
+                    break;
+                case 4:
+                    targetRPM[3] = DR16::getMotorRPM()->motor3;
+                    break;
+                default:
+                    break;
+                }
+                float targetCurrent =
+                    pid[canID - 1].update(targetRPM[canID - 1], DJIMotor::getRPM(canID));
+
+                DJIMotor::setOutput(targetCurrent, canID);
+
             }
-            float targetCurrent =
-                pid[canID - 1].update(targetRPM[canID - 1], DJIMotor::getRPM(canID));
-
-            DJIMotor::setOutput(targetCurrent, canID);
-
-        }
-        DJIMotor::transmit();
-        taskEXIT_CRITICAL();
-        /* Your user layer codes in loop end here*/
-        /*=================================================*/
-        if (true) {
-            //start AutoTrack
+            DJIMotor::transmit();
+            taskEXIT_CRITICAL();
+            /* Your user layer codes in loop end here*/
+            /*=================================================*/
+            if (true) {
+                //start AutoTrack
+            }
         }
         vTaskDelay(1);  // Delay and block the task for 1ms.
     }
@@ -119,23 +124,22 @@ void autoTrack(void *)
 {
     /* Your user layer codes begin here*/
     /*=================================================*/
-
-    // what does this do?
-    // while (!AutoTrack::setInitialHorizontalDistance()) {}
     
     /* Your user layer codes end here*/
     /*=================================================*/
     // while (AutoTrack::checkIfArrived())
-
-    while (DR16::autoTrackEnabled)
+    while (true)
     {
-        /* Your user layer codes in loop begin here*/
-        /*=================================================*/
-
-        AutoTrack::adjustForHorizontalMovement();
-        AutoTrack::executeMovement();
-        if (false) { //if arrived
-            break;
+        while (DR16::autoTrackEnabled)
+        {
+            nowRunningTask = 1;  
+            /* Your user layer codes in loop begin here*/
+            /*=================================================*/
+            AutoTrack::adjustForHorizontalMovement();
+            AutoTrack::executeMovement();
+            if (false) { //if arrived
+                break;
+            }
         }
         vTaskDelay(1);  // Delay and block the task for 1ms.
     }
@@ -143,13 +147,13 @@ void autoTrack(void *)
 
 /**
  * @brief Intialize all the drivers and add task to the scheduler
- * @todo  Add your own task in this file
+ * @todo  Add your own task in this filen
  */
 void startUserTasks()
 {
     DJIMotor::init();  // Initalize the DJIMotor driver
     DR16::init();      // Intialize the DR16 driver
-    ToFSensor::init();
+    // ToFSensor::init();
     xTaskCreateStatic(userTask,
                       "user_default ",
                       configMINIMAL_STACK_SIZE,

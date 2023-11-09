@@ -28,6 +28,7 @@ static HAL_StatusTypeDef status;
 float maxMotorRPM = 9000;
 
 bool autoTrackEnabled = false;
+bool leftWallMode = false;
 
 // Internal function declarations
 void setRPM(RcData);
@@ -117,13 +118,11 @@ const bool *getRcConnected() {
 // Max/Min ^ 2 * RPMConstant = maxMotorRPM
 const float RPMConstant = maxMotorRPM / 10000;
 
-// Find the Absolute Value of a Number (because I overlooked squaring a number is always positive)
+// Find the Absolute Value of a Number
 #define Abs(N) ((N<0)?(-N):(N))
 
 /**
  * @brief Converts the signals from the DR16 controller to RPM
- * @brief When tweaking the maxRPM, remember to tweak the constant
- * @brief Max output of 1 channel should roughly give the maxRPM for optimal efficiency and control
 */
 void setRPM(RcData originalData) {
     // Convert the channel data into a range between -100 and 100
@@ -134,26 +133,41 @@ void setRPM(RcData originalData) {
     float robotHorizontal = (originalData.channel2 - 1024)/6.6;
     float robotVertical = (originalData.channel3 - 1024)/6.6;
 
-    // Forward and Backwards (Vertical) Motion, forward = positive
-    float motorVertical = robotVertical * robotVertical * RPMConstant;
+        // Forward and Backwards (Vertical) Motion, forward = positive
+    int motor0Vertical = robotVertical * Abs(robotVertical) * RPMConstant;
+    int motor1Vertical = - robotVertical * Abs(robotVertical) * RPMConstant;
+    int motor2Vertical = robotVertical * Abs(robotVertical) * RPMConstant;
+    int motor3Vertical = - robotVertical * Abs(robotVertical) * RPMConstant;
 
     // Left and Right (Horizontal) Motion, right = positive
-    float motorHorizontal = robotHorizontal * robotHorizontal * RPMConstant;
+    int motor0Horizontal = robotHorizontal * Abs(robotHorizontal) * RPMConstant;
+    int motor1Horizontal = robotHorizontal * Abs(robotHorizontal) * RPMConstant;
+    int motor2Horizontal = - robotHorizontal * Abs(robotHorizontal) * RPMConstant;
+    int motor3Horizontal = - robotHorizontal * Abs(robotHorizontal) * RPMConstant;
 
     // Rotational Motion, clockwise = positive
-    float motorRotational = robotRotation * robotRotation * RPMConstant;
-    if (originalData.s2 == 2) {
+    int motor0Rotational = robotRotation * Abs(robotRotation) * RPMConstant;
+    int motor1Rotational = robotRotation * Abs(robotRotation) * RPMConstant;
+    int motor2Rotational = robotRotation * Abs(robotRotation) * RPMConstant;
+    int motor3Rotational = robotRotation * Abs(robotRotation) * RPMConstant;
+
+
+    // Add all of the motor controls together
+    // MotorRPM motorRPM;
+    updateRPM.motor0 = motor0Horizontal + motor0Vertical + motor0Rotational;
+    updateRPM.motor1 = motor1Horizontal + motor1Vertical + motor1Rotational;
+    updateRPM.motor2 = motor2Horizontal + motor2Vertical + motor2Rotational;
+    updateRPM.motor3 = motor3Horizontal + motor3Vertical + motor3Rotational;
+
+
+    if (originalData.s2 == 3) {
         autoTrackEnabled = false;
 
         // Add all of the motor controls together
         // The motor controls are added differently depending on the switch position
         // 1: Forward Mode | 2: Robotic Arm Mode | 3: Reverse Mode
         if (originalData.s1 == 1) {
-            updateRPM.motor0 =   motorHorizontal + motorVertical + motorRotational;
-            updateRPM.motor1 = - motorHorizontal + motorVertical + motorRotational;
-            updateRPM.motor2 =   motorHorizontal - motorVertical + motorRotational;
-            updateRPM.motor3 = - motorHorizontal - motorVertical + motorRotational;
-        } else if (originalData.s1 == 2)
+        } else if (originalData.s1 == 3)
         {
             // turn on the robotic arm
             // 3 channels needed
@@ -161,11 +175,11 @@ void setRPM(RcData originalData) {
             // rotate up and down
             // open and close
             return;
-        } else if (originalData.s1 == 3) {
-            updateRPM.motor0 = - motorHorizontal - motorVertical + motorRotational;
-            updateRPM.motor1 =   motorHorizontal - motorVertical + motorRotational;
-            updateRPM.motor2 = - motorHorizontal + motorVertical + motorRotational;
-            updateRPM.motor3 =   motorHorizontal + motorVertical + motorRotational;
+        } else if (originalData.s1 == 2) {
+            updateRPM.motor0 = - updateRPM.motor0;
+            updateRPM.motor1 = - updateRPM.motor1;
+            updateRPM.motor2 = - updateRPM.motor2;
+            updateRPM.motor3 = - updateRPM.motor3;
         }
 
         // Limit the calculated values and transmit to the motors
@@ -174,7 +188,11 @@ void setRPM(RcData originalData) {
         motorRPM.motor1 = updateRPM.motor1;
         motorRPM.motor2 = updateRPM.motor2;
         motorRPM.motor3 = updateRPM.motor3;
-    } else if (originalData.s2 == 1 || originalData.s2 == 3) {
+    } else if (originalData.s2 == 1) {
+        leftWallMode = true;
+        autoTrackEnabled = true;
+    } else if (originalData.s2 == 2) {
+        leftWallMode = false;
         autoTrackEnabled = true;
     }
 }
@@ -187,7 +205,7 @@ void setRPM(RcData originalData) {
  */
 void limitRPM(MotorRPM* inputRPM) {
 
-    // get the highest RPM
+    // get the highest RPM out of all the motors
     float maxRPM = Abs(inputRPM->motor0);
     if (Abs(inputRPM->motor1) > maxRPM) {
         maxRPM = inputRPM->motor1;
@@ -197,7 +215,7 @@ void limitRPM(MotorRPM* inputRPM) {
         maxRPM = inputRPM->motor3;
     }
     maxRPM = Abs(maxRPM);
-    // limit the RPM if it is higher than the maxMotorRPM
+    // limit the RPM if the highest RPM is higher than the maxMotorRPM
     if (maxRPM > maxMotorRPM) {
         inputRPM->motor0 = inputRPM->motor0 / maxRPM * maxMotorRPM;
         inputRPM->motor1 = inputRPM->motor1 / maxRPM * maxMotorRPM;
@@ -206,17 +224,6 @@ void limitRPM(MotorRPM* inputRPM) {
     }
 }
 
-/**
- * @brief set respective motor RPM
- * 
- */
-void controlMotorRPM() {
-    // limitRPM();
-    // motor0.setRPM(motorRPM.motor0);
-    // motor1.setRPM(motorRPM.motor1);
-    // motor2.setRPM(motorRPM.motor2);
-    // motor3.setRPM(motorRPM.motor3);
-}
 void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
     HAL_UART_Abort_IT(huart);
 
