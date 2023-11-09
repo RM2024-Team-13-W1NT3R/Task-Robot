@@ -33,7 +33,6 @@ static volatile float kd = 0.025f;
 static volatile uint16_t canID = 0;
 Control::PID pid[4]{{kp, ki, kd}, {kp, ki, kd}, {kp, ki, kd}, {kp, ki, kd}};
 
-extern bool autoTrackEnabled; //defined in DR16.cpp line 30
 /**
  * @todo Show your control outcome of the M3508 motor as follows
  */
@@ -45,7 +44,7 @@ void userTask(void *)
     
     /* Your user layer codes end here*/
     /*=================================================*/
-    while (!autoTrackEnabled)
+    while (!DR16::autoTrackEnabled)
     {
 
         /* Your user layer codes in loop begin here*/
@@ -128,7 +127,7 @@ void autoTrack(void *)
     /*=================================================*/
     // while (AutoTrack::checkIfArrived())
 
-    while (autoTrackEnabled)
+    while (DR16::autoTrackEnabled)
     {
         /* Your user layer codes in loop begin here*/
         /*=================================================*/
@@ -166,7 +165,7 @@ void startUserTasks()
                       uxAutoTaskStack,
                       &xAutoTaskTCB);  // Add the auto track task into the scheduler
 
-    )
+    
     /**
      * @todo Add your own task here
      */

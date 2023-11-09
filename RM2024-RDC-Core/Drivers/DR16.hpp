@@ -16,6 +16,7 @@
 namespace DR16
 {
 
+extern bool autoTrackEnabled; 
 
 /**
  * @brief the DR16 remote controller structure

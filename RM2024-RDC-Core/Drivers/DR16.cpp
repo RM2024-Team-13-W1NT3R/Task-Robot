@@ -27,7 +27,7 @@ static HAL_StatusTypeDef status;
 
 float maxMotorRPM = 9000;
 
-bool autoTrackEnabled = False;
+bool autoTrackEnabled = false;
 
 // Internal function declarations
 void setRPM(RcData);
@@ -160,7 +160,7 @@ void setRPM(RcData originalData) {
             // up and down
             // rotate up and down
             // open and close
-            continue;
+            return;
         } else if (originalData.s1 == 3) {
             updateRPM.motor0 = - motorHorizontal - motorVertical + motorRotational;
             updateRPM.motor1 =   motorHorizontal - motorVertical + motorRotational;
