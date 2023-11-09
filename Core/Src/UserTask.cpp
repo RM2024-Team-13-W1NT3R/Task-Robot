@@ -22,7 +22,7 @@ StackType_t uxPIDTaskStack[512];
 StaticTask_t xPIDTaskTCB;
 
 static volatile float kp = 1.0f;
-static volatile float ki = 1.0f;
+static volatile float ki = 2.0f;
 static volatile float kd = 0.025f;
 static volatile uint16_t canID = 0;
 Control::PID pid[4]{{kp, ki, kd}, {kp, ki, kd}, {kp, ki, kd}, {kp, ki, kd}};
