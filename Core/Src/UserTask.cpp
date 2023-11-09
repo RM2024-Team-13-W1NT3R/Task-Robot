@@ -17,6 +17,7 @@
 #include "main.h"
 #include "task.h"  // Include task
 #include "AutoTrack.hpp"
+#include "Ultrasonic.hpp"
 
 /*Allocate the stack for our PID task*/
 StackType_t uxPIDTaskStack[512];
@@ -27,6 +28,7 @@ StackType_t uxAutoTaskStack[512];
 /*Declare the PCB for our Auto Track task*/
 StaticTask_t xAutoTaskTCB;
 
+static uint32_t distance = 0;
 static volatile uint64_t nowRunningTask = 99;
 
 static volatile float kp = 5.0f;
@@ -130,17 +132,21 @@ void autoTrack(void *)
     // while (AutoTrack::checkIfArrived())
     while (true)
     {
-        while (DR16::autoTrackEnabled)
-        {
-            nowRunningTask = 1;  
-            /* Your user layer codes in loop begin here*/
-            /*=================================================*/
-            AutoTrack::adjustForHorizontalMovement();
-            AutoTrack::executeMovement();
-            if (false) { //if arrived
-                break;
-            }
+        // while (DR16::autoTrackEnabled)
+        // {
+        //     nowRunningTask = 1;  
+        //     /* Your user layer codes in loop begin here*/
+        //     /*=================================================*/
+        //     AutoTrack::adjustForHorizontalMovement();
+        //     AutoTrack::executeMovement();
+        //     if (false) { //if arrived
+        //         break;
+        //     }
+        // }
+        if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_4)) {
+            Ultrasonic::triggerStart();
         }
+        Ultrasonic::getDistance(&distance);
         vTaskDelay(1);  // Delay and block the task for 1ms.
     }
 }
@@ -154,13 +160,13 @@ void startUserTasks()
     DJIMotor::init();  // Initalize the DJIMotor driver
     DR16::init();      // Intialize the DR16 driver
     // ToFSensor::init();
-    xTaskCreateStatic(userTask,
-                      "user_default ",
-                      configMINIMAL_STACK_SIZE,
-                      NULL,
-                      15,
-                      uxPIDTaskStack,
-                      &xPIDTaskTCB);  // Add the main task into the scheduler
+    // xTaskCreateStatic(userTask,
+    //                   "user_default ",
+    //                   configMINIMAL_STACK_SIZE,
+    //                   NULL,
+    //                   15,
+    //                   uxPIDTaskStack,
+    //                   &xPIDTaskTCB);  // Add the main task into the scheduler
     xTaskCreateStatic(autoTrack,
                       "auto_track",
                       configMINIMAL_STACK_SIZE,

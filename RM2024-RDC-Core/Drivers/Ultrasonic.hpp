@@ -10,7 +10,7 @@
 
 namespace Ultrasonic
 {
-
-bool getDistance(uint32_t distance);
+void triggerStart();
+bool getDistance(uint32_t* distance);
 
 }
