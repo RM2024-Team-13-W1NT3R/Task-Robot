@@ -15,11 +15,15 @@
 #include "PID.hpp"     // Include PID
 #include "main.h"
 #include "task.h"  // Include task
+#include "tim.h"
+
 
 /*Allocate the stack for our PID task*/
 StackType_t uxPIDTaskStack[512];
 /*Declare the PCB for our PID task*/
 StaticTask_t xPIDTaskTCB;
+StackType_t uxGM995taskStack[128];
+StaticTask_t xGM995taskTCB;
 
 static volatile float kp = 1.0f;
 static volatile float ki = 2.0f;
@@ -84,6 +88,33 @@ void userTask(void *)
         vTaskDelay(1);  // Delay and block the task for 1ms.
     }
 }
+int angleToCCR(float angle)
+{
+  const int minAngle = 0;
+  const int maxAngle = 180;
+  const int minPulseWidth = 500;  // 最小脉冲宽度（微秒）
+  const int maxPulseWidth = 2500; // 最大脉冲宽度（微秒）
+  const int minCCR = 0;           // 最小CCR值
+  const int maxCCR = 199;         // 最大CCR值（根据计数器周期）
+
+  int pulseWidth = minPulseWidth + (angle - minAngle) * (maxPulseWidth - minPulseWidth) / (maxAngle - minAngle);
+  int ccr = minCCR + (pulseWidth - minPulseWidth) * (maxCCR - minCCR) / (maxPulseWidth - minPulseWidth);
+
+  return ccr;
+}
+
+void GM995task(void *)
+{ 
+    HAL_TIM_PWM_Start(&htim3,TIM_CHANNEL_1);//enable PWM output of tim3
+    HAL_TIM_PWM_Start(&htim3,TIM_CHANNEL_2);
+    int ccr = angleToCCR(180);
+    while (1)
+    {
+        __HAL_TIM_SetCompare(&htim3,TIM_CHANNEL_2,ccr);
+        vTaskDelay(2000);
+  }
+}
+
 
 /**
  * @todo In case you like it, please implement your own tasks
@@ -104,7 +135,14 @@ void startUserTasks()
                       NULL,
                       15,
                       uxPIDTaskStack,
-                      &xPIDTaskTCB);  // Add the main task into the scheduler
+                      &xPIDTaskTCB); // Add the main task into the scheduler
+    xTaskCreateStatic(GM995task,
+                      "GM995task ",
+                      128,
+                      NULL,
+                      10,
+                      uxGM995taskStack,
+                      &xGM995taskTCB);
     /**
      * @todo Add your own task here
      */
