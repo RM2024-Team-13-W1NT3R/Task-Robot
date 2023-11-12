@@ -16,7 +16,7 @@ namespace Servo
     }
     
 
-    void pickup ()
+    void pickup()
     {        
         __HAL_TIM_SetCompare(&htim2,TIM_CHANNEL_2,110);
         __HAL_TIM_SetCompare(&htim2,TIM_CHANNEL_2,40);
