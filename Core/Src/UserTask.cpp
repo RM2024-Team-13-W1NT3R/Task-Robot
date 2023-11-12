@@ -60,37 +60,40 @@ void userTask(void *)
             //     continue; // skip modulating when receiving data failed
             // }
 
-            float targetRPM[4];
+            float targetMotorOutput[6];
             float targetCurrent;
 
             if (canID <= 4) {
                 switch (canID)
                 {
                 case 1:
-                    targetRPM[0] = DR16::getMotorRPM()->motor0;
+                    targetMotorOutput[0] = DR16::getMotorRPM()->motor0;
                     break;
                 case 2:
-                    targetRPM[1] = DR16::getMotorRPM()->motor1;
+                    targetMotorOutput[1] = DR16::getMotorRPM()->motor1;
                     break;
                 case 3:
-                    targetRPM[2] = DR16::getMotorRPM()->motor2;
+                    targetMotorOutput[2] = DR16::getMotorRPM()->motor2;
                     break;
                 case 4:
-                    targetRPM[3] = DR16::getMotorRPM()->motor3;
+                    targetMotorOutput[3] = DR16::getMotorRPM()->motor3;
                     break;
                 default:
                     break;
                 }
-                targetCurrent = pid[canID - 1].update(targetRPM[canID - 1], DJIMotor::getRPM(canID));
+                targetCurrent = pid[canID - 1].update(targetMotorOutput[canID - 1], DJIMotor::getRPM(canID));
 
                 DJIMotor::setWheelsOutput(targetCurrent, canID);
             } else if (canID == 5) {
-                targetRPM[0] = DR16::getMotorRPM()->updownMotor;
-                targetCurrent = pid[canID - 1].update(targetRPM[canID - 1], DJIMotor::getRPM(canID));
-                DJIMotor::setClampOutput(targetCurrent, canID);
+                targetMotorOutput[5] = DR16::getMotorRPM()->updownMotor;
+                targetCurrent = pid[canID - 1].update(targetMotorOutput[canID - 1], DJIMotor::getRPM(canID));
+                // if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0) == GPIO_PIN_SET && targetMotorOutput[5] < 0) {
+                //     targetCurrent = 0;
+                // }
+                // DJIMotor::setClampOutput(targetCurrent, canID);
             } else if (canID == 6) {
-                targetRPM[1] = DR16::getMotorRPM()->clampMotor;
-                targetCurrent = pid[canID - 1].update(targetRPM[canID - 1], DJIMotor::getMotorAngle(canID));
+                targetMotorOutput[6] = DR16::getMotorRPM()->clampMotor;
+                targetCurrent = pid[canID - 1].update(targetMotorOutput[canID - 1], DJIMotor::getMotorAngle(canID));
                 DJIMotor::setClampOutput(targetCurrent, canID);
             }
             
