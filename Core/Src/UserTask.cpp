@@ -78,14 +78,6 @@ void userTask(void *)
                 case 4:
                     targetRPM[3] = DR16::getMotorRPM()->motor3;
                     break;
-                // case 5: // 
-                //     targetRPM[0] = DR16::getMotorRPM()->updownMotor;
-                //     targetCurrent = pid[canID - 1].update(targetRPM[canID - 1], DJIMotor::getRPM(canID));
-                //     break;
-                // case 6: // 
-                //     targetRPM[1] = DR16::getMotorRPM()->clampMotor;
-                //     targetCurrent = pid[canID - 1].update(targetRPM[canID - 1], DJIMotor::getMotorAngle(canID));
-                //     break;
                 default:
                     break;
                 }
