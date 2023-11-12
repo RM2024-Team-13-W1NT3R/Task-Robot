@@ -25,7 +25,10 @@ uint32_t lastConnectedTime;
 
 static HAL_StatusTypeDef status;
 
-float maxMotorRPM = 3000;
+float maxMotorRPM = 9000;
+
+bool autoTrackEnabled = false;
+bool leftWallMode = false;
 
 // Internal function declarations
 void setRPM(RcData);
@@ -125,12 +128,12 @@ void setRPM(RcData originalData) {
     // Convert the channel data into a range between -100 and 100
     // Also allows us to set the RPM easier with positive and negative numbers
     MotorRPM updateRPM {};
-    int robotRotation = (originalData.channel0 - 1024)/6.6;
-    int idkwhatthischannelwillbeusedfor = (originalData.channel1 - 1024)/6.6;
-    int robotHorizontal = (originalData.channel2 - 1024)/6.6;
-    int robotVertical = (originalData.channel3 - 1024)/6.6;
+    float robotRotation = (originalData.channel0 - 1024)/6.6;
+    float idkwhatthischannelwillbeusedfor = (originalData.channel1 - 1024)/6.6;
+    float robotHorizontal = (originalData.channel2 - 1024)/6.6;
+    float robotVertical = (originalData.channel3 - 1024)/6.6;
 
-    // Forward and Backwards (Vertical) Motion, forward = positive
+        // Forward and Backwards (Vertical) Motion, forward = positive
     int motor0Vertical = robotVertical * Abs(robotVertical) * RPMConstant;
     int motor1Vertical = - robotVertical * Abs(robotVertical) * RPMConstant;
     int motor2Vertical = robotVertical * Abs(robotVertical) * RPMConstant;
@@ -156,12 +159,42 @@ void setRPM(RcData originalData) {
     updateRPM.motor2 = motor2Horizontal + motor2Vertical + motor2Rotational;
     updateRPM.motor3 = motor3Horizontal + motor3Vertical + motor3Rotational;
 
-    // Limit the calculated values and transmit to the motors
-    limitRPM(&updateRPM);
-    motorRPM.motor0 = updateRPM.motor0;
-    motorRPM.motor1 = updateRPM.motor1;
-    motorRPM.motor2 = updateRPM.motor2;
-    motorRPM.motor3 = updateRPM.motor3;
+
+    if (originalData.s2 == 3) {
+        autoTrackEnabled = false;
+
+        // Add all of the motor controls together
+        // The motor controls are added differently depending on the switch position
+        // 1: Forward Mode | 2: Robotic Arm Mode | 3: Reverse Mode
+        if (originalData.s1 == 1) {
+        } else if (originalData.s1 == 3)
+        {
+            // turn on the robotic arm
+            // 3 channels needed
+            // up and down
+            // rotate up and down
+            // open and close
+            return;
+        } else if (originalData.s1 == 2) {
+            updateRPM.motor0 = - updateRPM.motor0;
+            updateRPM.motor1 = - updateRPM.motor1;
+            updateRPM.motor2 = - updateRPM.motor2;
+            updateRPM.motor3 = - updateRPM.motor3;
+        }
+
+        // Limit the calculated values and transmit to the motors
+        limitRPM(&updateRPM);
+        motorRPM.motor0 = updateRPM.motor0;
+        motorRPM.motor1 = updateRPM.motor1;
+        motorRPM.motor2 = updateRPM.motor2;
+        motorRPM.motor3 = updateRPM.motor3;
+    } else if (originalData.s2 == 1) {
+        leftWallMode = true;
+        autoTrackEnabled = true;
+    } else if (originalData.s2 == 2) {
+        leftWallMode = false;
+        autoTrackEnabled = true;
+    }
 }
 
 

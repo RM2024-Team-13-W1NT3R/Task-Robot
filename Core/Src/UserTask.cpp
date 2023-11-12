@@ -15,6 +15,7 @@
 #include "PID.hpp"     // Include PID
 #include "main.h"
 #include "task.h"  // Include task
+#include "AutoTrack.hpp"
 
 /*Allocate the stack for our PID task*/
 StackType_t uxPIDTaskStack[512];
@@ -44,39 +45,45 @@ void userTask(void *)
         /*=================================================*/
         DR16::getRcConnected();
         taskENTER_CRITICAL();
-        for (canID = 1; canID <= 4; canID++)
-        {
-            bool status = DJIMotor::getRxMessage(canID);
-            // if (!status)
-            // {
-            //     continue; // skip modulating when receiving data failed
-            // }
+        if (DR16::autoTrackEnabled) {
+            AutoTrack::executeMovement();
+        } else {
 
-            float targetRPM[4];
-            switch (canID)
+        
+            for (canID = 1; canID <= 4; canID++)
             {
-            case 1:
-                targetRPM[0] = DR16::getMotorRPM()->motor0;
-                break;
-            case 2:
-                targetRPM[1] = DR16::getMotorRPM()->motor1;
-                break;
-            case 3:
-                targetRPM[2] = DR16::getMotorRPM()->motor2;
-                break;
-            case 4:
-                targetRPM[3] = DR16::getMotorRPM()->motor3;
-                break;
-            default:
-                break;
+                bool status = DJIMotor::getRxMessage(canID);
+                // if (!status)
+                // {
+                //     continue; // skip modulating when receiving data failed
+                // }
+
+                float targetRPM[4];
+                switch (canID)
+                {
+                case 1:
+                    targetRPM[0] = DR16::getMotorRPM()->motor0;
+                    break;
+                case 2:
+                    targetRPM[1] = DR16::getMotorRPM()->motor1;
+                    break;
+                case 3:
+                    targetRPM[2] = DR16::getMotorRPM()->motor2;
+                    break;
+                case 4:
+                    targetRPM[3] = DR16::getMotorRPM()->motor3;
+                    break;
+                default:
+                    break;
+                }
+                float targetCurrent =
+                    pid[canID - 1].update(targetRPM[canID - 1], DJIMotor::getRPM(canID));
+
+                DJIMotor::setOutput(targetCurrent, canID);
+
             }
-            float targetCurrent =
-                pid[canID - 1].update(targetRPM[canID - 1], DJIMotor::getRPM(canID));
-
-            DJIMotor::setOutput(targetCurrent, canID);
-
+            DJIMotor::transmit();
         }
-        DJIMotor::transmit();
         taskEXIT_CRITICAL();
         /* Your user layer codes in loop end here*/
         /*=================================================*/
