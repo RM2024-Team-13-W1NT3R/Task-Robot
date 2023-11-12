@@ -15,6 +15,7 @@
 #include "PID.hpp"     // Include PID
 #include "main.h"
 #include "task.h"  // Include task
+#include "Servo.hpp"
 
 /*Allocate the stack for our PID task*/
 StackType_t uxPIDTaskStack[512];
@@ -46,7 +47,7 @@ void userTask(void *)
         taskENTER_CRITICAL();
         for (canID = 1; canID <= 4; canID++)
         {
-            bool status = DJIMotor::getRxMessage(canID);
+            //bool status = DJIMotor::getRxMessage(canID);
             // if (!status)
             // {
             //     continue; // skip modulating when receiving data failed
@@ -80,6 +81,14 @@ void userTask(void *)
         taskEXIT_CRITICAL();
         /* Your user layer codes in loop end here*/
         /*=================================================*/
+       Servo::pickup ();
+       vTaskDelay(2000); 
+       Servo::putdown ();
+       vTaskDelay(2000); 
+       Servo::pickup ();
+
+
+
 
         vTaskDelay(1);  // Delay and block the task for 1ms.
     }
@@ -97,6 +106,7 @@ void startUserTasks()
 {
     DJIMotor::init();  // Initalize the DJIMotor driver
     DR16::init();      // Intialize the DR16 driver
+    Servo::ServoInit();
 
     xTaskCreateStatic(userTask,
                       "user_default ",

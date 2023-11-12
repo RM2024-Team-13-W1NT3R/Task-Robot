@@ -46,6 +46,11 @@
         #endif
     #endif
 
+
+#define USE_Servo TRUE
+    #if USE_Servo
+    #endif
+
 // PID
 #define USE_PID TRUE
     
