@@ -93,7 +93,7 @@ bool getRxMessage(uint16_t canID)
         motorFeedback[canID - 1].temperature = rxData[6];
         return true; // receiving complete
     }
-    return false; // receiving failed
+    return false; // receiving failed 
 }
 /**
  * @todo

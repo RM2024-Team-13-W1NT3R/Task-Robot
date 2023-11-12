@@ -25,7 +25,7 @@ uint32_t lastConnectedTime;
 
 static HAL_StatusTypeDef status;
 
-float maxMotorRPM = 9000;
+float maxMotorRPM = 3000;
 
 // Internal function declarations
 void setRPM(RcData);
@@ -115,17 +115,15 @@ const bool *getRcConnected() {
 // Max/Min ^ 2 * RPMConstant = maxMotorRPM
 const float RPMConstant = maxMotorRPM / 10000;
 
-// Find the Absolute Value of a Number (because I overlooked squaring a number is always positive)
+// Find the Absolute Value of a Number
 #define Abs(N) ((N<0)?(-N):(N))
 
 /**
  * @brief Converts the signals from the DR16 controller to RPM
- * @brief When tweaking the maxRPM, remember to tweak the constant
- * @brief Max output of 1 channel should roughly give the maxRPM for optimal efficiency and control
 */
 void setRPM(RcData originalData) {
-    // Convert the channel data into a range between -100 and 100 because numbers like 1377 are ugly af
-    // Also because we need an +- range to set voltage/RPM easily
+    // Convert the channel data into a range between -100 and 100
+    // Also allows us to set the RPM easier with positive and negative numbers
     MotorRPM updateRPM {};
     int robotRotation = (originalData.channel0 - 1024)/6.6;
     int idkwhatthischannelwillbeusedfor = (originalData.channel1 - 1024)/6.6;
@@ -157,6 +155,8 @@ void setRPM(RcData originalData) {
     updateRPM.motor1 = motor1Horizontal + motor1Vertical + motor1Rotational;
     updateRPM.motor2 = motor2Horizontal + motor2Vertical + motor2Rotational;
     updateRPM.motor3 = motor3Horizontal + motor3Vertical + motor3Rotational;
+
+    // Limit the calculated values and transmit to the motors
     limitRPM(&updateRPM);
     motorRPM.motor0 = updateRPM.motor0;
     motorRPM.motor1 = updateRPM.motor1;
@@ -172,7 +172,7 @@ void setRPM(RcData originalData) {
  */
 void limitRPM(MotorRPM* inputRPM) {
 
-    // get the highest RPM
+    // get the highest RPM out of all the motors
     float maxRPM = Abs(inputRPM->motor0);
     if (Abs(inputRPM->motor1) > maxRPM) {
         maxRPM = inputRPM->motor1;
@@ -182,7 +182,7 @@ void limitRPM(MotorRPM* inputRPM) {
         maxRPM = inputRPM->motor3;
     }
     maxRPM = Abs(maxRPM);
-    // limit the RPM if it is higher than the maxMotorRPM
+    // limit the RPM if the highest RPM is higher than the maxMotorRPM
     if (maxRPM > maxMotorRPM) {
         inputRPM->motor0 = inputRPM->motor0 / maxRPM * maxMotorRPM;
         inputRPM->motor1 = inputRPM->motor1 / maxRPM * maxMotorRPM;
@@ -191,17 +191,6 @@ void limitRPM(MotorRPM* inputRPM) {
     }
 }
 
-/**
- * @brief set respective motor RPM
- * 
- */
-void controlMotorRPM() {
-    // limitRPM();
-    // motor0.setRPM(motorRPM.motor0);
-    // motor1.setRPM(motorRPM.motor1);
-    // motor2.setRPM(motorRPM.motor2);
-    // motor3.setRPM(motorRPM.motor3);
-}
 void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
     HAL_UART_Abort_IT(huart);
 
