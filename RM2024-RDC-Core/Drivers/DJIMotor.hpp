@@ -58,7 +58,7 @@ struct DJIMotor
      * float orientation; //  get the accumulated orientation of the motor
      * ......
      */
-    int16_t rotorAngle;
+    int16_t motorAngle;
     int16_t rpm;
     int16_t torqueCurrent;
     uint8_t temperature;
@@ -91,6 +91,15 @@ float getEncoder(uint16_t canID);
 float getRPM(uint16_t canID);
 
 /**
+ * @brief The motor's angle getter function
+ * @param canID The unique CAN id of your motor
+ * @note You need to return the current motor's angle feedback outward, becacause you need
+ * it in the PID module
+ * @retval motor's angle
+ */
+float getMotorAngle(uint16_t canID);
+
+/**
  * @brief Set the motor's output here
  * @note  You might need to refer to the user manual to "clamp" the maximum or
  * the minimun output
@@ -99,8 +108,9 @@ float getRPM(uint16_t canID);
  * - For GM6020, it's the motor's voltage
  * - For M3508, it's the motor's currnet
  */
-void setOutput(float output, uint16_t canID);
+void setWheelsOutput(float output, uint16_t canID);
 
+void setClampOutput(float output, uint16_t canID);
 
 // /**
 //  * @brief Set the motor's target rpm here
@@ -123,8 +133,17 @@ void setOutput(float output, uint16_t canID);
  * @param
  * @retval
  */
-void transmit();
+void transmitWheels();
 
+/**
+ * @brief Transmit the current set motor's output to the groups of motor based
+ * on the CAN header
+ * @param header The header of groups of motor
+ * @note For clear reference, please refer to the GM6020 and M3508 User manual
+ * @param
+ * @retval
+ */
+void transmitClamps();
 /*===========================================================*/
 /**
  * @brief You can define your customized function here

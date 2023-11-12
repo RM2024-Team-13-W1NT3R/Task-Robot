@@ -24,8 +24,15 @@ StaticTask_t xPIDTaskTCB;
 static volatile float kp = 5.0f;
 static volatile float ki = 1.0f;
 static volatile float kd = 0.025f;
+static volatile float udkp = 5.0f;
+static volatile float udki = 1.0f;
+static volatile float udkd = 0.025f;
+static volatile float anglekp = 5.0f;
+static volatile float angleki = 1.0f;
+static volatile float anglekd = 0.025f;
+
 static volatile uint16_t canID = 0;
-Control::PID pid[4]{{kp, ki, kd}, {kp, ki, kd}, {kp, ki, kd}, {kp, ki, kd}};
+Control::PID pid[6]{{kp, ki, kd}, {kp, ki, kd}, {kp, ki, kd}, {kp, ki, kd}, {udkp, udki, udkd}, {anglekp, angleki, anglekd}};
 /**
  * @todo Show your control outcome of the M3508 motor as follows
  */
@@ -44,7 +51,7 @@ void userTask(void *)
         /*=================================================*/
         DR16::getRcConnected();
         taskENTER_CRITICAL();
-        for (canID = 1; canID <= 4; canID++)
+        for (canID = 1; canID <= 6; canID++)
         {
             bool status = DJIMotor::getRxMessage(canID);
             // if (!status)
@@ -53,30 +60,51 @@ void userTask(void *)
             // }
 
             float targetRPM[4];
-            switch (canID)
-            {
-            case 1:
-                targetRPM[0] = DR16::getMotorRPM()->motor0;
-                break;
-            case 2:
-                targetRPM[1] = DR16::getMotorRPM()->motor1;
-                break;
-            case 3:
-                targetRPM[2] = DR16::getMotorRPM()->motor2;
-                break;
-            case 4:
-                targetRPM[3] = DR16::getMotorRPM()->motor3;
-                break;
-            default:
-                break;
+            float targetCurrent;
+
+            if (canID <= 4) {
+                switch (canID)
+                {
+                case 1:
+                    targetRPM[0] = DR16::getMotorRPM()->motor0;
+                    break;
+                case 2:
+                    targetRPM[1] = DR16::getMotorRPM()->motor1;
+                    break;
+                case 3:
+                    targetRPM[2] = DR16::getMotorRPM()->motor2;
+                    break;
+                case 4:
+                    targetRPM[3] = DR16::getMotorRPM()->motor3;
+                    break;
+                // case 5: // 
+                //     targetRPM[0] = DR16::getMotorRPM()->updownMotor;
+                //     targetCurrent = pid[canID - 1].update(targetRPM[canID - 1], DJIMotor::getRPM(canID));
+                //     break;
+                // case 6: // 
+                //     targetRPM[1] = DR16::getMotorRPM()->clampMotor;
+                //     targetCurrent = pid[canID - 1].update(targetRPM[canID - 1], DJIMotor::getMotorAngle(canID));
+                //     break;
+                default:
+                    break;
+                }
+                targetCurrent = pid[canID - 1].update(targetRPM[canID - 1], DJIMotor::getRPM(canID));
+
+                DJIMotor::setWheelsOutput(targetCurrent, canID);
+            } else if (canID == 5) {
+                targetRPM[0] = DR16::getMotorRPM()->updownMotor;
+                targetCurrent = pid[canID - 1].update(targetRPM[canID - 1], DJIMotor::getRPM(canID));
+                DJIMotor::setClampOutput(targetCurrent, canID);
+            } else if (canID == 6) {
+                targetRPM[1] = DR16::getMotorRPM()->clampMotor;
+                targetCurrent = pid[canID - 1].update(targetRPM[canID - 1], DJIMotor::getMotorAngle(canID));
+                DJIMotor::setClampOutput(targetCurrent, canID);
             }
-            float targetCurrent =
-                pid[canID - 1].update(targetRPM[canID - 1], DJIMotor::getRPM(canID));
-
-            DJIMotor::setOutput(targetCurrent, canID);
-
+            
+            
         }
-        DJIMotor::transmit();
+        DJIMotor::transmitWheels();
+        DJIMotor::transmitClamps();
         taskEXIT_CRITICAL();
         /* Your user layer codes in loop end here*/
         /*=================================================*/

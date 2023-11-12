@@ -8,27 +8,43 @@
 
 namespace DJIMotor
 {
-#define DJI_MOTOR_COUNT 4
+#define DJI_MOTOR_COUNT 6
 // Initialize motor's controller instance
 
 DJIMotor motorFeedback[DJI_MOTOR_COUNT];
 
 uint32_t mailbox;
 uint8_t rxData[8];
-uint8_t txData[8];
-CAN_TxHeaderTypeDef txHeader = {0x200, 0, CAN_ID_STD, CAN_RTR_DATA, 8, DISABLE};
+uint8_t txWheelsData[8];
+uint8_t txClampData[8];
+CAN_TxHeaderTypeDef txWheelsHeader = {0x200, 0, CAN_ID_STD, CAN_RTR_DATA, 8, DISABLE};
+CAN_TxHeaderTypeDef txClampHeader  = {0x1ff, 0, CAN_ID_STD, CAN_RTR_DATA, 8, DISABLE};
 CAN_RxHeaderTypeDef rxHeader;
 CAN_FilterTypeDef filter[DJI_MOTOR_COUNT];
-CAN_FilterTypeDef filterlist = {0x201 << 5,
-                 0x202 << 5,
-                 0x203 << 5,
-                 0x204 << 5,
-                 CAN_FILTER_FIFO0,
-                 0,
-                 CAN_FILTERMODE_IDLIST,
-                 CAN_FILTERSCALE_16BIT,
-                 CAN_FILTER_ENABLE,
-                 0};
+CAN_FilterTypeDef filterlist = {
+                0x201 << 5,
+                0x202 << 5,
+                0x203 << 5,
+                0x204 << 5,
+                CAN_FILTER_FIFO0,
+                0,
+                CAN_FILTERMODE_IDLIST,
+                CAN_FILTERSCALE_16BIT,
+                CAN_FILTER_ENABLE,
+                0};
+// use mask mode instead
+CAN_FilterTypeDef filterlist1 = {
+                0x205 << 5,
+                0x206 << 5,
+                0,
+                0,
+                CAN_FILTER_FIFO0,
+                1,
+                CAN_FILTERMODE_IDMASK,
+                CAN_FILTERSCALE_16BIT,
+                CAN_FILTER_ENABLE,
+                0};
+
                  
 volatile HAL_StatusTypeDef status;
 /*========================================================*/
@@ -40,48 +56,8 @@ volatile HAL_StatusTypeDef status;
  */
 void init()
 {
-    // // for (uint32_t i = 0; i < DJI_MOTOR_COUNT; i++) {
-    // filter[0] = {0,
-    //              0x201 << 5,
-    //              0xFFFFFFFF,
-    //              0xFFFFFFFF,
-    //              CAN_FILTER_FIFO0,
-    //              0,
-    //              CAN_FILTERMODE_IDLIST,
-    //              CAN_FILTERSCALE_16BIT,
-    //              CAN_FILTER_ENABLE,
-    //              0};
-    // filter[1] = {0,
-    //              0,
-    //              0,
-    //              0xFFFFFFFF,
-    //              CAN_FILTER_FIFO0,
-    //              1,
-    //              CAN_FILTERMODE_IDLIST,
-    //              CAN_FILTERSCALE_16BIT,
-    //              CAN_FILTER_ENABLE,
-    //              0};
-    // filter[2] = {0,
-    //              0,
-    //              0,
-    //              0,
-    //              CAN_FILTER_FIFO0,
-    //              2,
-    //              CAN_FILTERMODE_IDLIST,
-    //              CAN_FILTERSCALE_16BIT,
-    //              CAN_FILTER_ENABLE,
-    //              0};
-    // filter[3] = {0x201 << 5,
-    //              0x202 << 5,
-    //              0x203 << 5,
-    //              0,
-    //              CAN_FILTER_FIFO0,
-    //              3,
-    //              CAN_FILTERMODE_IDLIST,
-    //              CAN_FILTERSCALE_16BIT,
-    //              CAN_FILTER_ENABLE,
-    //              0};
     HAL_CAN_ConfigFilter(&hcan, &filterlist);
+    HAL_CAN_ConfigFilter(&hcan, &filterlist1);
     HAL_CAN_Start(&hcan);
 }
 
@@ -105,7 +81,7 @@ bool getRxMessage(uint16_t canID)
     {
         motorFeedback[canID - 1].canID = canID;
 
-        motorFeedback[canID - 1].rotorAngle =
+        motorFeedback[canID - 1].motorAngle =
             rxData[0] << 8 | rxData[1];
 
         motorFeedback[canID - 1].rpm =
@@ -122,17 +98,18 @@ bool getRxMessage(uint16_t canID)
 /**
  * @todo
  */
-float getEncoder(uint16_t canID) { return motorFeedback[canID - 1].rotorAngle; }
+float getEncoder(uint16_t canID) { return motorFeedback[canID - 1].motorAngle; }
 
 /**
  * @todo
  */
 float getRPM(uint16_t canID) { return motorFeedback[canID - 1].rpm; }
 
+float getMotorAngle(uint16_t canID) { return motorFeedback[canID - 1].motorAngle; }
 /**
  * @todo
  */
-void setOutput(float output, uint16_t canID)
+void setWheelsOutput(float output, uint16_t canID)
 {
     if (output > maxCurrent)
     {
@@ -143,14 +120,31 @@ void setOutput(float output, uint16_t canID)
         output = -maxCurrent;
     }
     // uint8_t mask                = 0xff;
-    txData[(canID - 1) * 2 + 1] = (static_cast<int> (output));
-    txData[(canID - 1) * 2]     = (static_cast<int> (output) >> 8);
+    txWheelsData[(canID - 1) * 2 + 1] = (static_cast<int> (output));
+    txWheelsData[(canID - 1) * 2]     = (static_cast<int> (output) >> 8);
+}
+
+void setClampOutput(float output, uint16_t canID)
+{
+    if (output > maxCurrent)
+    {
+        output = maxCurrent;
+    }
+    else if (output < -maxCurrent)
+    {
+        output = -maxCurrent;
+    }
+    // uint8_t mask                = 0xff;
+    txClampData[(canID - 5) * 2 + 1] = (static_cast<int> (output));
+    txClampData[(canID - 5) * 2]     = (static_cast<int> (output) >> 8);
 }
 
 /**
  * @todo
  */
-void transmit() { HAL_CAN_AddTxMessage(&hcan, &txHeader, txData, &mailbox); }
+void transmitWheels() { HAL_CAN_AddTxMessage(&hcan, &txWheelsHeader, txWheelsData, &mailbox); }
+
+void transmitClamps() { HAL_CAN_AddTxMessage(&hcan, &txClampHeader, txClampData, &mailbox); }
 
 //void callback() {}
 
