@@ -12,6 +12,7 @@
 #include "AppConfig.h"
 #include "stdint.h"
 #include "usart.h"
+#include "Servo.hpp"
 #if USE_DR16
 namespace DR16
 {

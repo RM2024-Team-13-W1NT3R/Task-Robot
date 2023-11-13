@@ -20,6 +20,8 @@ namespace DR16
 static RcData rcData;
 static MotorRPM motorRPM = {};
 bool rcConnected = false;
+
+bool openClamp = false;
 uint32_t lastUpdatedTime;
 uint32_t lastConnectedTime;
 
@@ -153,12 +155,7 @@ void setRPM(RcData originalData) {
     int elevation = - channel3 * RPMConstant; // Elevation
     
     int changeAngle = (Abs(channel1) > 90) ? (channel1/Abs(channel1)) : 0;
-    bool openClose;
-    if (channel2 > 90) {
-        openClose = true;
-    } else if (channel2 < -90){
-        openClose = false;
-    }
+    
 
 
     if (originalData.s2 == 3) {
@@ -181,7 +178,14 @@ void setRPM(RcData originalData) {
                 updateRPM.updownMotor *= 0.50;
             }
             // updateRPM.clampMotor = changeAngle;
+            if (channel2 > 90 && !openClamp) {
+                openClamp = true;
+                Servo::pickup();
 
+            } else if (channel2 < -90 && openClamp){
+                openClamp = false;
+                Servo::putdown();
+            }
             motorRPM.motor0 = 0;
             motorRPM.motor1 = 0;
             motorRPM.motor2 = 0;
