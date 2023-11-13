@@ -25,7 +25,7 @@ StaticTask_t xPIDTaskTCB;
 static volatile float kp = 1.0f;
 static volatile float ki = 2.0f;
 static volatile float kd = 0.025f;
-static volatile float udkp = 5.0f;
+static volatile float udkp = 1.0f;
 static volatile float udki = 1.0f;
 static volatile float udkd = 0.025f;
 static volatile float anglekp = 5.0f;
@@ -51,8 +51,8 @@ void userTask(void *)
         /* Your user layer codes in loop begin here*/
         /*=================================================*/
         DR16::getRcConnected();
-        taskENTER_CRITICAL();
-        for (canID = 1; canID <= 6; canID++)
+        // taskENTER_CRITICAL();
+        for (canID = 1; canID <= 5; canID++)
         {
             bool status = DJIMotor::getRxMessage(canID);
             // if (!status)
@@ -93,16 +93,16 @@ void userTask(void *)
             case 6:
                 targetMotorOutput[5] = DR16::getMotorRPM()->clampMotor;
                 targetCurrent = pid[canID - 1].update(targetMotorOutput[canID - 1], DJIMotor::getMotorAngle(canID));
+                targetCurrent = 0;
             default:
                 break;
             }
             if (canID <= 4)
             {
             DJIMotor::setWheelsOutput(targetCurrent, canID);
+            } else {
+            DJIMotor::setClampsOutput(targetCurrent, canID);
             }
-            // } else {
-            // DJIMotor::setClampsOutput(targetCurrent, canID);
-            // }
             
 
    
@@ -110,8 +110,8 @@ void userTask(void *)
             
         }
         DJIMotor::transmitWheels();
-        // DJIMotor::transmitClamps();
-        taskEXIT_CRITICAL();
+        DJIMotor::transmitClamps();
+        // taskEXIT_CRITICAL();
         /* Your user layer codes in loop end here*/
         /*=================================================*/
     //    Servo::pickup ();

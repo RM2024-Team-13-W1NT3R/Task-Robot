@@ -57,7 +57,7 @@ volatile HAL_StatusTypeDef status;
 void init()
 {
     HAL_CAN_ConfigFilter(&hcan, &filterlist);
-    // HAL_CAN_ConfigFilter(&hcan, &filterlist1);
+    HAL_CAN_ConfigFilter(&hcan, &filterlist1);
     HAL_CAN_Start(&hcan);
 }
 

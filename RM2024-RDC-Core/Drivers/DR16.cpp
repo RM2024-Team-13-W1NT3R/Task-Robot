@@ -150,7 +150,8 @@ void setRPM(RcData originalData) {
     int motor3Rotational = channel0 * Abs(channel0) * RPMConstant;
 
     // Robotic Arm Decoding
-    int elevation = channel3 * RPMConstant; // Elevation
+    int elevation = - channel3 * RPMConstant; // Elevation
+    
     int changeAngle = (Abs(channel1) > 90) ? (channel1/Abs(channel1)) : 0;
     bool openClose;
     if (channel2 > 90) {
@@ -176,6 +177,9 @@ void setRPM(RcData originalData) {
         } else if (originalData.s1 == 3)
         {
             updateRPM.updownMotor = elevation * 100;
+            if (updateRPM.updownMotor > 0) {
+                updateRPM.updownMotor *= 0.50;
+            }
             // updateRPM.clampMotor = changeAngle;
 
             motorRPM.motor0 = 0;
