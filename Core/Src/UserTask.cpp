@@ -22,11 +22,23 @@ StackType_t uxPIDTaskStack[512];
 /*Declare the PCB for our PID task*/
 StaticTask_t xPIDTaskTCB;
 
-static volatile float kp = 1.0f;
-static volatile float ki = 2.0f;
+static volatile float kp = 10.0f;
+static volatile float ki = 15.0f;
 static volatile float kd = 0.025f;
-static volatile float udkp = 1.0f;
-static volatile float udki = 1.0f;
+static volatile float kp1 = 1.0f;
+static volatile float ki1 = 2.0f;
+static volatile float kd1 = 0.025f;
+static volatile float kp2 = 1.0f;
+static volatile float ki2 = 2.0f;
+static volatile float kd2 = 0.025f;
+static volatile float kp3 = 1.0f;
+static volatile float ki3 = 2.0f;
+static volatile float kd3 = 0.025f;
+static volatile float kp4 = 1.0f;
+static volatile float ki4 = 2.0f;
+static volatile float kd4 = 0.025f;
+static volatile float udkp = 0.25f;
+static volatile float udki = 2.0f;
 static volatile float udkd = 0.025f;
 static volatile float anglekp = 5.0f;
 static volatile float angleki = 1.0f;
@@ -42,7 +54,7 @@ void userTask(void *)
     /* Your user layer codes begin here*/
     /*=================================================*/
 
-    
+    bool* resetTargetClamp = DR16::getResetAngle();
     /* Your user layer codes end here*/
     /*=================================================*/
     while (true)
@@ -51,10 +63,10 @@ void userTask(void *)
         /* Your user layer codes in loop begin here*/
         /*=================================================*/
         DR16::getRcConnected();
+        bool status = DJIMotor::getRxMessage(canID);
         // taskENTER_CRITICAL();
         for (canID = 1; canID <= 5; canID++)
         {
-            bool status = DJIMotor::getRxMessage(canID);
             // if (!status)
             // {
             //     continue; // skip modulating when receiving data failed
@@ -84,16 +96,23 @@ void userTask(void *)
                 break;
             case 5:
                 targetMotorOutput[4] = DR16::getMotorRPM()->updownMotor;
-                targetCurrent = pid[canID - 1].update(targetMotorOutput[canID - 1], DJIMotor::getRPM(canID));
+                targetCurrent = pid[canID - 1].update(targetMotorOutput[canID - 1], DJIMotor::getRPM(canID)); 
                 // if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0) == GPIO_PIN_SET && targetMotorOutput[5] < 0) {
                 //     targetCurrent = 0;
                 // }
                 // DJIMotor::setClampOutput(targetCurrent, canID);
                 break;
             case 6:
-                targetMotorOutput[5] = DR16::getMotorRPM()->clampMotor;
-                targetCurrent = pid[canID - 1].update(targetMotorOutput[canID - 1], DJIMotor::getMotorAngle(canID));
-                targetCurrent = 0;
+                if (*resetTargetClamp) {
+                    DJIMotor::setTargetClampAngle(DJIMotor::getMotorAngle(canID));
+                    *resetTargetClamp = false;
+                    // do pid rpm for angle
+                } else {
+                    targetMotorOutput[5] = DR16::getMotorRPM()->clampMotor;
+                    targetCurrent = pid[canID - 1].update(*DJIMotor::getTargetClampAngle(), DJIMotor::getMotorAngle(canID));
+                    targetCurrent = 0;
+                }
+                
             default:
                 break;
             }
@@ -114,13 +133,6 @@ void userTask(void *)
         // taskEXIT_CRITICAL();
         /* Your user layer codes in loop end here*/
         /*=================================================*/
-    //    Servo::pickup ();
-    //    vTaskDelay(2000); 
-    //    Servo::putdown ();
-    //    vTaskDelay(2000); 
-    //    Servo::pickup ();
-
-
 
 
         vTaskDelay(1);  // Delay and block the task for 1ms.

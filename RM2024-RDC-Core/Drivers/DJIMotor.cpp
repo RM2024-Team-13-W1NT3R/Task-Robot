@@ -11,6 +11,15 @@ namespace DJIMotor
 #define DJI_MOTOR_COUNT 6
 // Initialize motor's controller instance
 
+static uint16_t targetClampAngle = 0;
+
+
+
+uint16_t* getTargetClampAngle() {
+    return &targetClampAngle;
+}
+
+
 DJIMotor motorFeedback[DJI_MOTOR_COUNT];
 
 uint32_t mailbox;
@@ -105,7 +114,7 @@ float getEncoder(uint16_t canID) { return motorFeedback[canID - 1].motorAngle; }
  */
 float getRPM(uint16_t canID) { return motorFeedback[canID - 1].rpm; }
 
-float getMotorAngle(uint16_t canID) { return motorFeedback[canID - 1].motorAngle; }
+uint16_t getMotorAngle(uint16_t canID) { return motorFeedback[canID - 1].motorAngle; }
 /**
  * @todo
  */
@@ -139,6 +148,11 @@ void setClampsOutput(float output, uint16_t canID)
     // uint8_t mask                = 0xff;
     txClampData[(canID - 5) * 2 + 1] = (static_cast<int> (output));
     txClampData[(canID - 5) * 2]     = (static_cast<int> (output) >> 8);
+}
+
+void setTargetClampAngle(uint16_t canID) {
+    targetClampAngle = getMotorAngle(canID);
+
 }
 
 /**

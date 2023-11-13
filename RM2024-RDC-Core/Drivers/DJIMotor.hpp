@@ -98,8 +98,11 @@ float getRPM(uint16_t canID);
  * it in the PID module
  * @retval motor's angle
  */
-float getMotorAngle(uint16_t canID);
+uint16_t getMotorAngle(uint16_t canID);
 
+void setTargetClampAngle(uint16_t angle);
+
+uint16_t* getTargetClampAngle();
 /**
  * @brief Set the motor's output here
  * @note  You might need to refer to the user manual to "clamp" the maximum or

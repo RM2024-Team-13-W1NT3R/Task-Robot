@@ -13,10 +13,13 @@
 #include "stdint.h"
 #include "usart.h"
 #include "Servo.hpp"
+#include "DJIMotor.hpp"
+
 #if USE_DR16
 namespace DR16
 {
 
+bool* getResetAngle();
 
 /**
  * @brief the DR16 remote controller structure

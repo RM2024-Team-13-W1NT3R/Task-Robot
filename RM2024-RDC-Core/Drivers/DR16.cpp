@@ -26,7 +26,11 @@ uint32_t lastUpdatedTime;
 uint32_t lastConnectedTime;
 
 static HAL_StatusTypeDef status;
+static bool resetAngle;
 
+bool* getResetAngle() {
+    return &resetAngle;
+}
 float maxMotorRPM = 3000;
 
 // Internal function declarations
@@ -154,7 +158,7 @@ void setRPM(RcData originalData) {
     // Robotic Arm Decoding
     int elevation = - channel3 * RPMConstant; // Elevation
     
-    int changeAngle = (Abs(channel1) > 90) ? (channel1/Abs(channel1)) : 0;
+    int changeAngle = (Abs(channel1) > 90) ? (channel1/Abs(channel1)) / 100 : 0;
     
 
 
@@ -178,18 +182,23 @@ void setRPM(RcData originalData) {
                 updateRPM.updownMotor *= 0.50;
             }
             // updateRPM.clampMotor = changeAngle;
-            if (channel2 > 90 && !openClamp) {
+            if (channel0 > 90 && !openClamp) {
                 openClamp = true;
                 Servo::pickup();
 
-            } else if (channel2 < -90 && openClamp){
+            } else if (channel0 < -90 && openClamp){
                 openClamp = false;
                 Servo::putdown();
             }
-            motorRPM.motor0 = 0;
-            motorRPM.motor1 = 0;
-            motorRPM.motor2 = 0;
-            motorRPM.motor3 = 0;
+
+            updateRPM.clampMotor = changeAngle;
+            if (changeAngle == false) {
+                resetAngle = true;
+            }
+            updateRPM.motor0 = 0;
+            updateRPM.motor1 = 0;
+            updateRPM.motor2 = 0;
+            updateRPM.motor3 = 0;
         } else if (originalData.s1 == 2) {
             updateRPM.motor0 = - motor0Horizontal - motor0Vertical + motor0Rotational;
             updateRPM.motor1 = - motor1Horizontal - motor1Vertical + motor1Rotational;
