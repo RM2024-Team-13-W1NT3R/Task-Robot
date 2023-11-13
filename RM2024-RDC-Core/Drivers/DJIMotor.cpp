@@ -69,25 +69,19 @@ void init()
     HAL_CAN_ConfigFilter(&hcan, &filterlist1);
     HAL_CAN_Start(&hcan);
 }
-
-bool getRxMessage(uint16_t canID)
+uint32_t fifoLevel;
+uint32_t curFifoLevel;
+void getRxMessage()
 {
     // HAL_CAN_Stop(&hcan);
     // HAL_CAN_Start(&hcan);
-    status =
+
+    fifoLevel = HAL_CAN_GetRxFifoFillLevel(&hcan, CAN_RX_FIFO0);
+    for (int i = 0; i < fifoLevel; i++) {
         HAL_CAN_GetRxMessage(&hcan, CAN_RX_FIFO0, &rxHeader, rxData);
-        //status = 0 means successfully receive, status = 1 means error
-
-
-    if (rxHeader.StdId != ((uint32_t) (0x200 + canID)))
-    {
-        status = HAL_ERROR;
-        return false; // receiving failed
-    }
-
-
-    if (!status)
-    {
+        curFifoLevel = HAL_CAN_GetRxFifoFillLevel(&hcan, CAN_RX_FIFO0);
+        uint16_t canID = rxHeader.StdId - 0x200;
+        
         motorFeedback[canID - 1].canID = canID;
 
         motorFeedback[canID - 1].motorAngle =
@@ -100,9 +94,8 @@ bool getRxMessage(uint16_t canID)
             rxData[4] << 8 | rxData[5];
 
         motorFeedback[canID - 1].temperature = rxData[6];
-        return true; // receiving complete
     }
-    return false; // receiving failed 
+
 }
 /**
  * @todo

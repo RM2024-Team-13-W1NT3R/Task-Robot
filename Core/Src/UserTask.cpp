@@ -22,9 +22,12 @@ StackType_t uxPIDTaskStack[512];
 /*Declare the PCB for our PID task*/
 StaticTask_t xPIDTaskTCB;
 
-static volatile float kp = 10.0f;
-static volatile float ki = 15.0f;
-static volatile float kd = 0.025f;
+StackType_t uxRxTaskStack[512];
+StaticTask_t xRxTaskTCB;
+
+static volatile float kp = 5.0f;
+static volatile float ki = 20.0f;
+static volatile float kd = 0.0f;
 static volatile float kp1 = 1.0f;
 static volatile float ki1 = 2.0f;
 static volatile float kd1 = 0.025f;
@@ -37,8 +40,8 @@ static volatile float kd3 = 0.025f;
 static volatile float kp4 = 1.0f;
 static volatile float ki4 = 2.0f;
 static volatile float kd4 = 0.025f;
-static volatile float udkp = 0.25f;
-static volatile float udki = 2.0f;
+static volatile float udkp = 1.0f;
+static volatile float udki = 5.0f;
 static volatile float udkd = 0.025f;
 static volatile float anglekp = 5.0f;
 static volatile float angleki = 1.0f;
@@ -63,7 +66,6 @@ void userTask(void *)
         /* Your user layer codes in loop begin here*/
         /*=================================================*/
         DR16::getRcConnected();
-        bool status = DJIMotor::getRxMessage(canID);
         // taskENTER_CRITICAL();
         for (canID = 1; canID <= 5; canID++)
         {
@@ -139,6 +141,13 @@ void userTask(void *)
     }
 }
 
+void RxDataReceive(void *) {
+    while (true) {
+        DJIMotor::getRxMessage();
+        vTaskDelay(1);
+    }
+}
+
 /**
  * @todo In case you like it, please implement your own tasks
  */
@@ -160,6 +169,14 @@ void startUserTasks()
                       15,
                       uxPIDTaskStack,
                       &xPIDTaskTCB);  // Add the main task into the scheduler
+
+    xTaskCreateStatic(RxDataReceive,
+                        "user_default ",
+                        configMINIMAL_STACK_SIZE,
+                        NULL,
+                        15,
+                        uxRxTaskStack,
+                        &xRxTaskTCB);  // Add the main task into the scheduler
     /**
      * @todo Add your own task here
      */

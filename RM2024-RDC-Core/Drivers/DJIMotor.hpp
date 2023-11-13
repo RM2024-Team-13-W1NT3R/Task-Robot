@@ -162,7 +162,7 @@ accumulated position(orientation) of the motor
  * ..... And more .....
  *
 ============================================================*/
-bool getRxMessage(uint16_t canID);
+void getRxMessage();
 
 
 /*===========================================================*/
