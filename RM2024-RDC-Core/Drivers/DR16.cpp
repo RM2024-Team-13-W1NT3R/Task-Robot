@@ -125,36 +125,88 @@ void setRPM(RcData originalData) {
     // Convert the channel data into a range between -100 and 100
     // Also allows us to set the RPM easier with positive and negative numbers
     MotorRPM updateRPM {};
-    int robotRotation = (originalData.channel0 - 1024)/6.6;
-    int idkwhatthischannelwillbeusedfor = (originalData.channel1 - 1024)/6.6;
-    int robotHorizontal = (originalData.channel2 - 1024)/6.6;
-    int robotVertical = (originalData.channel3 - 1024)/6.6;
+    int channel0 = (originalData.channel0 - 1024)/6.6;
+    int channel1 = (originalData.channel1 - 1024)/6.6;
+    int channel2 = (originalData.channel2 - 1024)/6.6;
+    int channel3 = (originalData.channel3 - 1024)/6.6;
 
+    // Motor Decoding
     // Forward and Backwards (Vertical) Motion, forward = positive
-    int motor0Vertical = robotVertical * Abs(robotVertical) * RPMConstant;
-    int motor1Vertical = - robotVertical * Abs(robotVertical) * RPMConstant;
-    int motor2Vertical = robotVertical * Abs(robotVertical) * RPMConstant;
-    int motor3Vertical = - robotVertical * Abs(robotVertical) * RPMConstant;
+    int motor0Vertical = channel3 * Abs(channel3) * RPMConstant;
+    int motor1Vertical = - channel3 * Abs(channel3) * RPMConstant;
+    int motor2Vertical = channel3 * Abs(channel3) * RPMConstant;
+    int motor3Vertical = - channel3 * Abs(channel3) * RPMConstant;
 
     // Left and Right (Horizontal) Motion, right = positive
-    int motor0Horizontal = robotHorizontal * Abs(robotHorizontal) * RPMConstant;
-    int motor1Horizontal = robotHorizontal * Abs(robotHorizontal) * RPMConstant;
-    int motor2Horizontal = - robotHorizontal * Abs(robotHorizontal) * RPMConstant;
-    int motor3Horizontal = - robotHorizontal * Abs(robotHorizontal) * RPMConstant;
+    int motor0Horizontal = channel2 * Abs(channel2) * RPMConstant;
+    int motor1Horizontal = channel2 * Abs(channel2) * RPMConstant;
+    int motor2Horizontal = - channel2 * Abs(channel2) * RPMConstant;
+    int motor3Horizontal = - channel2 * Abs(channel2) * RPMConstant;
 
     // Rotational Motion, clockwise = positive
-    int motor0Rotational = robotRotation * Abs(robotRotation) * RPMConstant;
-    int motor1Rotational = robotRotation * Abs(robotRotation) * RPMConstant;
-    int motor2Rotational = robotRotation * Abs(robotRotation) * RPMConstant;
-    int motor3Rotational = robotRotation * Abs(robotRotation) * RPMConstant;
+    int motor0Rotational = channel0 * Abs(channel0) * RPMConstant;
+    int motor1Rotational = channel0 * Abs(channel0) * RPMConstant;
+    int motor2Rotational = channel0 * Abs(channel0) * RPMConstant;
+    int motor3Rotational = channel0 * Abs(channel0) * RPMConstant;
+
+    // Robotic Arm Decoding
+    int elevation = channel3 * RPMConstant; // Elevation
+    int changeAngle = (Abs(channel1) > 90) ? (channel1/Abs(channel1)) : 0;
+    bool openClose;
+    if (channel2 > 90) {
+        openClose = true;
+    } else if (channel2 < -90){
+        openClose = false;
+    }
 
 
-    // Add all of the motor controls together
-    // MotorRPM motorRPM;
-    updateRPM.motor0 = motor0Horizontal + motor0Vertical + motor0Rotational;
-    updateRPM.motor1 = motor1Horizontal + motor1Vertical + motor1Rotational;
-    updateRPM.motor2 = motor2Horizontal + motor2Vertical + motor2Rotational;
-    updateRPM.motor3 = motor3Horizontal + motor3Vertical + motor3Rotational;
+    if (originalData.s2 == 3) {
+        // Disable auto shortcut
+
+        // Add all of the motor controls together and reset the other modes
+        // 1: Forward Mode | 2: Robotic Arm Mode | 3: Reverse Mode
+        if (originalData.s1 == 1) {
+            updateRPM.motor0 = motor0Horizontal + motor0Vertical + motor0Rotational;
+            updateRPM.motor1 = motor1Horizontal + motor1Vertical + motor1Rotational;
+            updateRPM.motor2 = motor2Horizontal + motor2Vertical + motor2Rotational;
+            updateRPM.motor3 = motor3Horizontal + motor3Vertical + motor3Rotational;
+            
+            motorRPM.clampMotor = 0;
+            motorRPM.updownMotor = 0;
+        } else if (originalData.s1 == 3)
+        {
+            updateRPM.updownMotor = elevation * 100;
+            // updateRPM.clampMotor = changeAngle;
+
+            motorRPM.motor0 = 0;
+            motorRPM.motor1 = 0;
+            motorRPM.motor2 = 0;
+            motorRPM.motor3 = 0;
+        } else if (originalData.s1 == 2) {
+            updateRPM.motor0 = - motor0Horizontal - motor0Vertical + motor0Rotational;
+            updateRPM.motor1 = - motor1Horizontal - motor1Vertical + motor1Rotational;
+            updateRPM.motor2 = - motor2Horizontal - motor2Vertical + motor2Rotational;
+            updateRPM.motor3 = - motor3Horizontal - motor3Vertical + motor3Rotational;
+
+            motorRPM.clampMotor = 0;
+            motorRPM.updownMotor = 0;
+        }
+
+        // Limit the calculated values and transmit to the motors
+        limitRPM(&updateRPM);
+        motorRPM.motor0 = updateRPM.motor0;
+        motorRPM.motor1 = updateRPM.motor1;
+        motorRPM.motor2 = updateRPM.motor2;
+        motorRPM.motor3 = updateRPM.motor3;
+        motorRPM.clampMotor = updateRPM.clampMotor;
+        motorRPM.updownMotor = updateRPM.updownMotor;
+
+
+    } else if (originalData.s2 == 1) {
+        // Enable Left Wall Auto Shortcut
+    } else if (originalData.s2 == 2) {
+        // Enable Right Wall Auto Shortcut
+    }
 
     // Limit the calculated values and transmit to the motors
     limitRPM(&updateRPM);

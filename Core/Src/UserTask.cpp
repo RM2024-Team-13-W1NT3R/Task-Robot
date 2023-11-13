@@ -52,13 +52,13 @@ void userTask(void *)
         /*=================================================*/
         DR16::getRcConnected();
         taskENTER_CRITICAL();
-        for (canID = 1; canID <= 6; canID++)
+        for (canID = 1; canID <= 2; canID++)
         {
-            //bool status = DJIMotor::getRxMessage(canID);
-            // if (!status)
-            // {
-            //     continue; // skip modulating when receiving data failed
-            // }
+            bool status = DJIMotor::getRxMessage(canID);
+            if (!status)
+            {
+                continue; // skip modulating when receiving data failed
+            }
 
             float targetMotorOutput[6];
             float targetCurrent;
