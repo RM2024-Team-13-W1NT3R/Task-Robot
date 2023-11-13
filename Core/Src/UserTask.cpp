@@ -52,63 +52,73 @@ void userTask(void *)
         /*=================================================*/
         DR16::getRcConnected();
         taskENTER_CRITICAL();
-        for (canID = 1; canID <= 2; canID++)
+        for (canID = 1; canID <= 6; canID++)
         {
             bool status = DJIMotor::getRxMessage(canID);
-            if (!status)
-            {
-                continue; // skip modulating when receiving data failed
-            }
+            // if (!status)
+            // {
+            //     continue; // skip modulating when receiving data failed
+            // }
 
             float targetMotorOutput[6];
-            float targetCurrent;
+            float targetCurrent = 0;
 
-            if (canID <= 4) {
-                switch (canID)
-                {
-                case 1:
-                    targetMotorOutput[0] = DR16::getMotorRPM()->motor0;
-                    break;
-                case 2:
-                    targetMotorOutput[1] = DR16::getMotorRPM()->motor1;
-                    break;
-                case 3:
-                    targetMotorOutput[2] = DR16::getMotorRPM()->motor2;
-                    break;
-                case 4:
-                    targetMotorOutput[3] = DR16::getMotorRPM()->motor3;
-                    break;
-                default:
-                    break;
-                }
+  
+            switch (canID)
+            {
+            case 1:
+                targetMotorOutput[0] = DR16::getMotorRPM()->motor0;
                 targetCurrent = pid[canID - 1].update(targetMotorOutput[canID - 1], DJIMotor::getRPM(canID));
-
-                DJIMotor::setWheelsOutput(targetCurrent, canID);
-            } else if (canID == 5) {
-                targetMotorOutput[5] = DR16::getMotorRPM()->updownMotor;
+                break;
+            case 2:
+                targetMotorOutput[1] = DR16::getMotorRPM()->motor1;
+                targetCurrent = pid[canID - 1].update(targetMotorOutput[canID - 1], DJIMotor::getRPM(canID));
+                break;
+            case 3:
+                targetMotorOutput[2] = DR16::getMotorRPM()->motor2;
+                targetCurrent = pid[canID - 1].update(targetMotorOutput[canID - 1], DJIMotor::getRPM(canID));
+                break;
+            case 4:
+                targetMotorOutput[3] = DR16::getMotorRPM()->motor3;
+                targetCurrent = pid[canID - 1].update(targetMotorOutput[canID - 1], DJIMotor::getRPM(canID));
+                break;
+            case 5:
+                targetMotorOutput[4] = DR16::getMotorRPM()->updownMotor;
                 targetCurrent = pid[canID - 1].update(targetMotorOutput[canID - 1], DJIMotor::getRPM(canID));
                 // if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0) == GPIO_PIN_SET && targetMotorOutput[5] < 0) {
                 //     targetCurrent = 0;
                 // }
                 // DJIMotor::setClampOutput(targetCurrent, canID);
-            } else if (canID == 6) {
-                targetMotorOutput[6] = DR16::getMotorRPM()->clampMotor;
+                break;
+            case 6:
+                targetMotorOutput[5] = DR16::getMotorRPM()->clampMotor;
                 targetCurrent = pid[canID - 1].update(targetMotorOutput[canID - 1], DJIMotor::getMotorAngle(canID));
-                DJIMotor::setClampOutput(targetCurrent, canID);
+            default:
+                break;
             }
+            if (canID <= 4)
+            {
+            DJIMotor::setWheelsOutput(targetCurrent, canID);
+            }
+            // } else {
+            // DJIMotor::setClampsOutput(targetCurrent, canID);
+            // }
+            
+
+   
             
             
         }
         DJIMotor::transmitWheels();
-        DJIMotor::transmitClamps();
+        // DJIMotor::transmitClamps();
         taskEXIT_CRITICAL();
         /* Your user layer codes in loop end here*/
         /*=================================================*/
-       Servo::pickup ();
-       vTaskDelay(2000); 
-       Servo::putdown ();
-       vTaskDelay(2000); 
-       Servo::pickup ();
+    //    Servo::pickup ();
+    //    vTaskDelay(2000); 
+    //    Servo::putdown ();
+    //    vTaskDelay(2000); 
+    //    Servo::pickup ();
 
 
 

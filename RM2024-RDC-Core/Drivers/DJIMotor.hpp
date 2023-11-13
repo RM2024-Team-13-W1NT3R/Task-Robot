@@ -111,7 +111,7 @@ float getMotorAngle(uint16_t canID);
  */
 void setWheelsOutput(float output, uint16_t canID);
 
-void setClampOutput(float output, uint16_t canID);
+void setClampsOutput(float output, uint16_t canID);
 
 // /**
 //  * @brief Set the motor's target rpm here

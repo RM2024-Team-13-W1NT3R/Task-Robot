@@ -208,12 +208,6 @@ void setRPM(RcData originalData) {
         // Enable Right Wall Auto Shortcut
     }
 
-    // Limit the calculated values and transmit to the motors
-    limitRPM(&updateRPM);
-    motorRPM.motor0 = updateRPM.motor0;
-    motorRPM.motor1 = updateRPM.motor1;
-    motorRPM.motor2 = updateRPM.motor2;
-    motorRPM.motor3 = updateRPM.motor3;
 }
 
 

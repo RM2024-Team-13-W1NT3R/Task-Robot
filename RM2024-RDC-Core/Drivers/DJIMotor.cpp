@@ -111,6 +111,7 @@ float getMotorAngle(uint16_t canID) { return motorFeedback[canID - 1].motorAngle
  */
 void setWheelsOutput(float output, uint16_t canID)
 {
+    if (canID > 4) {return;}
     if (output > maxCurrent)
     {
         output = maxCurrent;
@@ -124,8 +125,9 @@ void setWheelsOutput(float output, uint16_t canID)
     txWheelsData[(canID - 1) * 2]     = (static_cast<int> (output) >> 8);
 }
 
-void setClampOutput(float output, uint16_t canID)
+void setClampsOutput(float output, uint16_t canID)
 {
+    if (canID <= 4) {return;}
     if (output > maxCurrent)
     {
         output = maxCurrent;
