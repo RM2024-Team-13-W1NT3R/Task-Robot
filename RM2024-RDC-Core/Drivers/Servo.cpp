@@ -11,19 +11,19 @@ namespace Servo
     //extern TIM_HandleTypeDef htim2;
    void ServoInit()
    {
-     HAL_TIM_PWM_Start(&htim2,TIM_CHANNEL_2); 
-     HAL_TIM_PWM_Start(&htim2,TIM_CHANNEL_1);
+     HAL_TIM_PWM_Start(&htim3,TIM_CHANNEL_3); 
+     HAL_TIM_PWM_Start(&htim3,TIM_CHANNEL_4);
     }
     
 
     void pickup ()
     {        
-        __HAL_TIM_SetCompare(&htim2,TIM_CHANNEL_2,110);
-        __HAL_TIM_SetCompare(&htim2,TIM_CHANNEL_2,40);
+        __HAL_TIM_SetCompare(&htim3,TIM_CHANNEL_3,290);//90 degree
+        __HAL_TIM_SetCompare(&htim3,TIM_CHANNEL_3,724);//180 degree
     }
     void putdown()
     {
-        __HAL_TIM_SetCompare(&htim2,TIM_CHANNEL_2,110);
+        __HAL_TIM_SetCompare(&htim3,TIM_CHANNEL_3,290);
         
     }
 

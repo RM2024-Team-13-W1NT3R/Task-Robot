@@ -126,7 +126,7 @@ void setRPM(RcData originalData) {
     // Also allows us to set the RPM easier with positive and negative numbers
     MotorRPM updateRPM {};
     int robotRotation = (originalData.channel0 - 1024)/6.6;
-    int idkwhatthischannelwillbeusedfor = (originalData.channel1 - 1024)/6.6;
+    //int idkwhatthischannelwillbeusedfor = (originalData.channel1 - 1024)/6.6;
     int robotHorizontal = (originalData.channel2 - 1024)/6.6;
     int robotVertical = (originalData.channel3 - 1024)/6.6;
 
