@@ -55,6 +55,10 @@ CAN_FilterTypeDef filterlist1 = {
                 0};
 
                  
+uint16_t getTorqueCurrent(uint16_t canID) {
+    return motorFeedback[canID - 1].torqueCurrent;
+}
+
 volatile HAL_StatusTypeDef status;
 /*========================================================*/
 // Your implementation of the function, or even your customized function, should

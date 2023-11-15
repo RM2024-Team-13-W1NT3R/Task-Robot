@@ -43,9 +43,15 @@ static volatile float kd4 = 0.025f;
 static volatile float udkp = 1.0f;
 static volatile float udki = 5.0f;
 static volatile float udkd = 0.025f;
-static volatile float anglekp = 5.0f;
-static volatile float angleki = 1.0f;
+static volatile float anglekp = 15.0f;
+static volatile float angleki = 0.0f;
 static volatile float anglekd = 0.025f;
+
+static volatile float targetAngleTest = 6000;
+
+static float targetCurrent = -2000;
+
+static int goingUpTime;
 
 static volatile uint16_t canID = 0;
 Control::PID pid[6]{{kp, ki, kd}, {kp, ki, kd}, {kp, ki, kd}, {kp, ki, kd}, {udkp, udki, udkd}, {anglekp, angleki, anglekd}};
@@ -65,9 +71,10 @@ void userTask(void *)
 
         /* Your user layer codes in loop begin here*/
         /*=================================================*/
+        goingUpTime = HAL_GetTick();
         DR16::getRcConnected();
         // taskENTER_CRITICAL();
-        for (canID = 1; canID <= 5; canID++)
+        for (canID = 1; canID <= 6; canID++)
         {
             // if (!status)
             // {
@@ -75,7 +82,7 @@ void userTask(void *)
             // }
 
             float targetMotorOutput[6];
-            float targetCurrent = 0;
+            // float targetAngleCurrent = 4000;
 
   
             switch (canID)
@@ -99,22 +106,40 @@ void userTask(void *)
             case 5:
                 targetMotorOutput[4] = DR16::getMotorRPM()->updownMotor;
                 targetCurrent = pid[canID - 1].update(targetMotorOutput[canID - 1], DJIMotor::getRPM(canID)); 
-                // if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0) == GPIO_PIN_SET && targetMotorOutput[5] < 0) {
-                //     targetCurrent = 0;
-                // }
+                if (HAL_GPIO_ReadPin(SWITCH_TOP_GPIO_Port, SWITCH_TOP_Pin) == GPIO_PIN_SET && targetCurrent < 0) {
+                    targetCurrent = 0;
+                }
+                if (HAL_GPIO_ReadPin(SWITCH_BOT_GPIO_Port, SWITCH_BOT_Pin) == GPIO_PIN_SET && targetCurrent > 0) {
+                    targetCurrent = 0;
+                }
                 // DJIMotor::setClampOutput(targetCurrent, canID);
                 break;
             case 6:
                 if (*resetTargetClamp) {
-                    DJIMotor::setTargetClampAngle(DJIMotor::getMotorAngle(canID));
-                    *resetTargetClamp = false;
-                    // do pid rpm for angle
-                } else {
-                    targetMotorOutput[5] = DR16::getMotorRPM()->clampMotor;
-                    targetCurrent = pid[canID - 1].update(*DJIMotor::getTargetClampAngle(), DJIMotor::getMotorAngle(canID));
                     targetCurrent = 0;
+                //     DJIMotor::setTargetClampAngle(canID);
+                    *resetTargetClamp = false;
                 }
-                
+                //     targetCurrent = pid[canID - 1].update(DR16::getMotorRPM()->clampMotor, DJIMotor::getRPM(canID));
+                //     // do pid rpm for angle
+                // } else {
+                targetMotorOutput[5] = DR16::getMotorRPM()->clampMotor;
+                targetCurrent = pid[canID - 1].update(targetAngleTest, DJIMotor::getMotorAngle(canID));
+                // // }
+                // targetMotorOutput[5] = DR16::getMotorRPM()->clampMotor;
+                // targetCurrent = pid[canID - 1].update(targetMotorOutput[5], DJIMotor::getRPM(canID));
+                // targetCurrent = -3500;
+                // if (targetCurrent > -4000) {
+                //     targetCurrent--;
+                // }
+                // if (DR16::getMotorRPM()->clampMotor > 0) {
+                //     targetCurrent = -4000;
+                // } else if (DR16::getMotorRPM()->clampMotor == 0) {
+                //     targetCurrent = -3000;
+                // } else {
+                //     targetCurrent = -1000;
+                // }
+                 
             default:
                 break;
             }
@@ -136,7 +161,7 @@ void userTask(void *)
         /* Your user layer codes in loop end here*/
         /*=================================================*/
 
-
+        // Servo::putdown();
         vTaskDelay(1);  // Delay and block the task for 1ms.
     }
 }

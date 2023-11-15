@@ -91,6 +91,7 @@ float getEncoder(uint16_t canID);
  */
 float getRPM(uint16_t canID);
 
+uint16_t getTorqueCurrent(uint16_t canID);
 /**
  * @brief The motor's angle getter function
  * @param canID The unique CAN id of your motor

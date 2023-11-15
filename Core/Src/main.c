@@ -96,8 +96,6 @@ int main(void)
   MX_USART2_UART_Init();
   MX_USART3_UART_Init();
   MX_TIM2_Init();
-  HAL_NVIC_SetPriority(TIM2_IRQn, 2, 0);
-  HAL_TIM_Base_Start_IT(&htim2);
   /* USER CODE BEGIN 2 */
   extern void startRTOS(void);
   startRTOS();
