@@ -119,7 +119,7 @@ const bool *getRcConnected() {
 }
 
 // Max/Min ^ 2 * RPMConstant = maxMotorRPM
-const float RPMConstant = maxMotorRPM / 10000;
+const float RPMConstant = maxMotorRPM / 100;
 
 // Find the Absolute Value of a Number
 #define Abs(N) ((N<0)?(-N):(N))
@@ -138,25 +138,25 @@ void setRPM(RcData originalData) {
 
     // Motor Decoding
     // Forward and Backwards (Vertical) Motion, forward = positive
-    int motor0Vertical = channel3 * Abs(channel3) * RPMConstant;
-    int motor1Vertical = - channel3 * Abs(channel3) * RPMConstant;
-    int motor2Vertical = channel3 * Abs(channel3) * RPMConstant;
-    int motor3Vertical = - channel3 * Abs(channel3) * RPMConstant;
+    int motor0Vertical = channel3 * RPMConstant;
+    int motor1Vertical = - channel3 * RPMConstant;
+    int motor2Vertical = channel3 * RPMConstant;
+    int motor3Vertical = - channel3 * RPMConstant;
 
     // Left and Right (Horizontal) Motion, right = positive
-    int motor0Horizontal = channel2 * Abs(channel2) * RPMConstant;
-    int motor1Horizontal = channel2 * Abs(channel2) * RPMConstant;
-    int motor2Horizontal = - channel2 * Abs(channel2) * RPMConstant;
-    int motor3Horizontal = - channel2 * Abs(channel2) * RPMConstant;
+    int motor0Horizontal = channel2 * RPMConstant;
+    int motor1Horizontal = channel2 * RPMConstant;
+    int motor2Horizontal = - channel2 * RPMConstant;
+    int motor3Horizontal = - channel2 * RPMConstant;
 
     // Rotational Motion, clockwise = positive
-    int motor0Rotational = channel0 * Abs(channel0) * RPMConstant;
-    int motor1Rotational = channel0 * Abs(channel0) * RPMConstant;
-    int motor2Rotational = channel0 * Abs(channel0) * RPMConstant;
-    int motor3Rotational = channel0 * Abs(channel0) * RPMConstant;
+    int motor0Rotational = channel0 * RPMConstant;
+    int motor1Rotational = channel0 * RPMConstant;
+    int motor2Rotational = channel0 * RPMConstant;
+    int motor3Rotational = channel0 * RPMConstant;
 
     // Robotic Arm Decoding
-    int elevation = - channel3 * RPMConstant; // Elevation
+    int elevation = - channel3 * RPMConstant / 100; // Elevation
     
     int changeAngle = (Abs(channel1) > 90) ? (channel1/Abs(channel1)) / 100 : 0;
     
