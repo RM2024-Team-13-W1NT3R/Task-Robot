@@ -14,6 +14,7 @@
 #include "usart.h"
 #include "Servo.hpp"
 #include "DJIMotor.hpp"
+#include "AutoTrack.hpp"
 
 #if USE_DR16
 namespace DR16
@@ -52,6 +53,12 @@ typedef struct
     float updownMotor;
     float clampMotor;
 } MotorRPM;
+
+extern bool autoTrackEnabled;
+extern bool leftMode;
+
+bool* getAutoTrackEnabled();
+bool* getLeftMode();
 
 /**
  * @brief Access the decoded remote controller datat by this API

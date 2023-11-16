@@ -25,6 +25,9 @@ bool openClamp = false;
 uint32_t lastUpdatedTime;
 uint32_t lastConnectedTime;
 
+static bool autoTrackEnabled = false;
+static bool leftMode = false;
+
 static HAL_StatusTypeDef status;
 static bool resetAngle;
 
@@ -164,6 +167,7 @@ void setRPM(RcData originalData) {
 
     if (originalData.s2 == 3) {
         // Disable auto shortcut
+        autoTrackEnabled = false;
 
         // Add all of the motor controls together and reset the other modes
         // 1: Forward Mode | 2: Robotic Arm Mode | 3: Reverse Mode
@@ -220,12 +224,24 @@ void setRPM(RcData originalData) {
 
     } else if (originalData.s2 == 1) {
         // Enable Left Wall Auto Shortcut
+        autoTrackEnabled = true;
+        leftMode = true;
+        AutoTrack::setStart();
     } else if (originalData.s2 == 2) {
         // Enable Right Wall Auto Shortcut
+        autoTrackEnabled = true;
+        leftMode = false;
+        AutoTrack::setStart();
     }
 
 }
+bool* getAutoTrackEnabled() {
+    return &autoTrackEnabled;
+}
 
+bool* getLeftMode() {
+    return &leftMode;
+}
 
 /**
  * @brief Limit the RPM if RPM is > maxMotorRPM

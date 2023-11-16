@@ -46,7 +46,8 @@ static volatile float udkd = 0.025f;
 static volatile float anglekp = 15.0f;
 static volatile float angleki = 0.0f;
 static volatile float anglekd = 0.025f;
-
+bool started = false;
+bool stayDown = true;
 static volatile float targetAngleTest = 6000;
 
 static float targetCurrent = -2000;
@@ -54,7 +55,7 @@ static float targetCurrent = -2000;
 static int goingUpTime;
 
 static volatile uint16_t canID = 0;
-Control::PID pid[6]{{kp, ki, kd}, {kp, ki, kd}, {kp, ki, kd}, {kp, ki, kd}, {udkp, udki, udkd}, {anglekp, angleki, anglekd}};
+Control::PID pid[6] {{kp, ki, kd}, {kp, ki, kd}, {kp, ki, kd}, {kp, ki, kd}, {udkp, udki, udkd}, {anglekp, angleki, anglekd}};
 /**
  * @todo Show your control outcome of the M3508 motor as follows
  */
@@ -74,6 +75,9 @@ void userTask(void *)
         goingUpTime = HAL_GetTick();
         DR16::getRcConnected();
         // taskENTER_CRITICAL();
+        if (*DR16::getAutoTrackEnabled()) {
+            AutoTrack::executeMovement(*DR16::getLeftMode());
+        }
         for (canID = 1; canID <= 6; canID++)
         {
             // if (!status)
@@ -115,30 +119,41 @@ void userTask(void *)
                 // DJIMotor::setClampOutput(targetCurrent, canID);
                 break;
             case 6:
-                if (*resetTargetClamp) {
-                    targetCurrent = 0;
-                //     DJIMotor::setTargetClampAngle(canID);
-                    *resetTargetClamp = false;
-                }
-                //     targetCurrent = pid[canID - 1].update(DR16::getMotorRPM()->clampMotor, DJIMotor::getRPM(canID));
-                //     // do pid rpm for angle
-                // } else {
-                targetMotorOutput[5] = DR16::getMotorRPM()->clampMotor;
-                targetCurrent = pid[canID - 1].update(targetAngleTest, DJIMotor::getMotorAngle(canID));
+                // if (*resetTargetClamp) {
+                //     targetCurrent = 0;
+                // //     DJIMotor::setTargetClampAngle(canID);
+                //     *resetTargetClamp = false;
+                // }
+                // //     targetCurrent = pid[canID - 1].update(DR16::getMotorRPM()->clampMotor, DJIMotor::getRPM(canID));
+                // //     // do pid rpm for angle
+                // // } else {
+                // targetMotorOutput[5] = DR16::getMotorRPM()->clampMotor;
+                // targetCurrent = pid[canID - 1].update(targetAngleTest, DJIMotor::getMotorAngle(canID));
                 // // }
                 // targetMotorOutput[5] = DR16::getMotorRPM()->clampMotor;
                 // targetCurrent = pid[canID - 1].update(targetMotorOutput[5], DJIMotor::getRPM(canID));
                 // targetCurrent = -3500;
-                // if (targetCurrent > -4000) {
-                //     targetCurrent--;
-                // }
-                // if (DR16::getMotorRPM()->clampMotor > 0) {
-                //     targetCurrent = -4000;
-                // } else if (DR16::getMotorRPM()->clampMotor == 0) {
-                //     targetCurrent = -3000;
-                // } else {
-                //     targetCurrent = -1000;
-                // }
+                if (targetCurrent > -4000) {
+                    targetCurrent--;
+                }
+                if (DR16::getMotorRPM()->clampMotor > 0) {
+                    stayDown = false;
+                    if (!started) {
+                        targetCurrent = -3500;
+                        started = true;
+                    } else {
+                        targetCurrent = -6500;
+                    }
+                } else if (DR16::getMotorRPM()->clampMotor == 0) {
+                    if (stayDown) {
+                        targetCurrent = -1000;
+                    } else {
+                        targetCurrent = -4500;
+                    }
+                } else {
+                    targetCurrent = -1000;
+                    stayDown = true;
+                }
                  
             default:
                 break;
