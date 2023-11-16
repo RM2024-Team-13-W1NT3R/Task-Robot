@@ -6,13 +6,13 @@ uint32_t startTime;
 uint32_t lastUpdatedTime;
 
 uint32_t FORWARD_TIME = 5000;
-uint32_t HORIZONTAL_TIME = 1000;
+uint32_t HORIZONTAL_TIME = 500;
 uint8_t horizontalCount = 0;
 
 static volatile float kp = 1;
 static volatile float ki = 2;
 static volatile float kd = 0.025;
-Control::PID pid[4] {{kp, ki, kd}, {kp, ki, kd}, {kp, ki, kd}, {kp, ki, kd}};
+Control::PID autoPID[4] {{kp, ki, kd}, {kp, ki, kd}, {kp, ki, kd}, {kp, ki, kd}};
 
 #define FORWARD_SPEED 3000
 #define HORIZONTAL_SPEED 1000
@@ -28,44 +28,6 @@ enum class State {
 
 State state;
 
-void executeMovement(bool leftMode) {
-    switch (state)
-    {
-    case State::START:
-        startTime = HAL_GetTick();
-        lastUpdatedTime = HAL_GetTick();
-        state = State::MOVE_OUT_HORIZONTAL;
-        break;
-    case State::FORWARD:
-        if (HAL_GetTick() - lastUpdatedTime > FORWARD_TIME) {
-            startTime = HAL_GetTick();
-        } else {
-            state = State::MOVE_IN_HORIZONTAL;
-        }
-        controlMotor(state, leftMode);
-        break;
-    case State::MOVE_OUT_HORIZONTAL:
-        if (HAL_GetTick() - lastUpdatedTime > HORIZONTAL_TIME) {
-            startTime = HAL_GetTick();
-        } else {
-            state = State::FORWARD;
-        }
-        controlMotor(state, leftMode);
-        break;
-    case State::MOVE_IN_HORIZONTAL:
-        if (HAL_GetTick() - lastUpdatedTime > HORIZONTAL_TIME + 500 && horizontalCount < 2) {
-            startTime = HAL_GetTick();
-            horizontalCount++;
-        } else {
-            state = State::MOVE_OUT_HORIZONTAL;
-        }
-        controlMotor(state, leftMode);
-        break;
-    default:
-        break;
-    }
-    
-}
 
 void controlMotor(State state, bool leftMode) {
     uint32_t targetMotorSpeed[4];
@@ -119,11 +81,53 @@ void controlMotor(State state, bool leftMode) {
         default:
             break;
         }
-        float targetCurrent = pid[canID - 1].update(targetMotorOutput[canID - 1], DJIMotor::getRPM(canID));
+        float targetCurrent = autoPID[canID - 1].update(targetMotorOutput[canID - 1], DJIMotor::getRPM(canID));
         DJIMotor::setWheelsOutput(canID, targetCurrent);
-    }
-    DJIMotor::transmitWheels();
+    }   
+    // DJIMotor::transmitWheels();
 }
+
+void executeMovement(bool leftMode) {
+    // switch (state)
+    // {
+    // case State::START:
+    //     startTime = HAL_GetTick();
+    //     lastUpdatedTime = HAL_GetTick();
+    //     state = State::MOVE_OUT_HORIZONTAL;
+    //     break;
+    // case State::FORWARD:
+    //     if (HAL_GetTick() - lastUpdatedTime > FORWARD_TIME) {
+    //         startTime = HAL_GetTick();
+    //     } else {
+    //         state = State::MOVE_IN_HORIZONTAL;
+    //     }
+    //     controlMotor(state, leftMode);
+    //     break;
+    // case State::MOVE_OUT_HORIZONTAL:
+    //     if (HAL_GetTick() - lastUpdatedTime > HORIZONTAL_TIME) {
+    //         startTime = HAL_GetTick();
+    //     } else {
+    //         state = State::FORWARD;
+    //     }
+    //     controlMotor(state, leftMode);
+    //     break;
+    // case State::MOVE_IN_HORIZONTAL:
+    //     if (HAL_GetTick() - lastUpdatedTime > HORIZONTAL_TIME + 500 && horizontalCount < 2) {
+    //         startTime = HAL_GetTick();
+    //         horizontalCount++;
+    //     } else {
+    //         state = State::MOVE_OUT_HORIZONTAL;
+    //     }
+    //     controlMotor(state, leftMode);
+    //     break;
+    // default:
+    //     break;
+    // }
+    
+    controlMotor(State::FORWARD, leftMode);
+    
+}
+
 
 void setStart() {
     state = State::START;

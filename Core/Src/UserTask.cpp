@@ -77,7 +77,9 @@ void userTask(void *)
         // taskENTER_CRITICAL();
         if (*DR16::getAutoTrackEnabled()) {
             AutoTrack::executeMovement(*DR16::getLeftMode());
-        }
+        } else {
+
+        
         for (canID = 1; canID <= 6; canID++)
         {
             // if (!status)
@@ -110,10 +112,10 @@ void userTask(void *)
             case 5:
                 targetMotorOutput[4] = DR16::getMotorRPM()->updownMotor;
                 targetCurrent = pid[canID - 1].update(targetMotorOutput[canID - 1], DJIMotor::getRPM(canID)); 
-                if (HAL_GPIO_ReadPin(SWITCH_TOP_GPIO_Port, SWITCH_TOP_Pin) == GPIO_PIN_SET && targetCurrent < 0) {
+                if (HAL_GPIO_ReadPin(SWITCH_TOP_GPIO_Port, SWITCH_TOP_Pin) == GPIO_PIN_RESET && targetCurrent < 0) {
                     targetCurrent = 0;
                 }
-                if (HAL_GPIO_ReadPin(SWITCH_BOT_GPIO_Port, SWITCH_BOT_Pin) == GPIO_PIN_SET && targetCurrent > 0) {
+                if (HAL_GPIO_ReadPin(SWITCH_BOT_GPIO_Port, SWITCH_BOT_Pin) == GPIO_PIN_RESET && targetCurrent > 0) {
                     targetCurrent = 0;
                 }
                 // DJIMotor::setClampOutput(targetCurrent, canID);
@@ -169,6 +171,7 @@ void userTask(void *)
    
             
             
+        } 
         }
         DJIMotor::transmitWheels();
         DJIMotor::transmitClamps();

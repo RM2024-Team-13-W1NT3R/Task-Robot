@@ -181,7 +181,7 @@ void setRPM(RcData originalData) {
             motorRPM.updownMotor = 0;
         } else if (originalData.s1 == 3)
         {
-            updateRPM.updownMotor = elevation * 100;
+            updateRPM.updownMotor = elevation * 200;
             if (updateRPM.updownMotor > 0) {
                 updateRPM.updownMotor *= 0.50;
             }
@@ -235,7 +235,7 @@ void setRPM(RcData originalData) {
     }
 
 }
-bool* getAutoTrackEnabled() {
+bool* getAutoTrackEnabled()     {
     return &autoTrackEnabled;
 }
 

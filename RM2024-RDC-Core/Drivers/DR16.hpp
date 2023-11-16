@@ -54,8 +54,6 @@ typedef struct
     float clampMotor;
 } MotorRPM;
 
-extern bool autoTrackEnabled;
-extern bool leftMode;
 
 bool* getAutoTrackEnabled();
 bool* getLeftMode();
