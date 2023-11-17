@@ -185,7 +185,7 @@ void setRPM(RcData originalData) {
         {
             updateRPM.updownMotor = elevation * 200;
             if (updateRPM.updownMotor > 0) {
-                updateRPM.updownMotor *= 0.50;
+                updateRPM.updownMotor *= 0.70;
             }
             // updateRPM.clampMotor = changeAngle;
             if (channel0 > 90 && !openClamp) {
@@ -201,7 +201,7 @@ void setRPM(RcData originalData) {
             if (changeAngle) {
                 resetAngle = true;
             } else {
-                resetAngle = false;
+                resetAngle = false; 
             }
             updateRPM.motor0 = 0;
             updateRPM.motor1 = 0;
