@@ -32,8 +32,8 @@ class PID
      * @param Ki_ The I term of the PID
      * @param Kd_ The D term of the PID
      */
-    PID(float Kp_ = 0, float Ki_ = 0, float Kd_ = 0)
-        : Kp(Kp_), Ki(Ki_), Kd(Kd_){};
+    PID(float Kp_ = 0, float Ki_ = 0, float Kd_ = 0, float Kdamp_ = 0)
+        : Kp(Kp_), Ki(Ki_), Kd(Kd_), Kdamp(Kdamp_) {};
     /**
      * @brief Update the PID status and return
      * @note  You need to implement the specific definition in the PID.cpp file
@@ -57,6 +57,7 @@ class PID
     float Kp = 0;  // The P param of the PID
     float Ki = 0;  // The I param of the PID
     float Kd = 0;  // The D param of the PID
+    float Kdamp = 0;
 
     float error     = 0;  // The error in this update
     float lastError = 0;  // The error from last update

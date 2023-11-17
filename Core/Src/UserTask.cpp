@@ -26,13 +26,13 @@ StackType_t uxRxTaskStack[512];
 StaticTask_t xRxTaskTCB;
 
 static volatile float kp = 1.0f;
-static volatile float ki = 20.0f;
-static volatile float kd = 0.0f;
+static volatile float ki = 5.0f;
+static volatile float kd = 0.02f;
 static volatile float udkp = 1.0f;
 static volatile float udki = 5.0f;
 static volatile float udkd = 0.025f;
 static volatile float anglekp = 10.0f;
-static volatile float angleki = 0.2f;
+static volatile float angleki = 5.0f;
 static volatile float anglekd = 0.02f;
 static volatile float angleStaykp = 0.5f;
 static volatile float angleStayki = 0.5f;
@@ -120,7 +120,7 @@ void userTask(void *)
                 angleCurrent = angleStayPID.update(*DJIMotor::getTargetClampAngle(), DJIMotor::getMotorAngle(canID));
                 curAngle = *DJIMotor::getTargetClampAngle();
                 
-                angleCurrent = angleCurrent > 16834 / 4 ? 16834 / 4 : angleCurrent;
+                angleCurrent = angleCurrent > 2000 ? 2000 : angleCurrent;
                 // angleCurrent = angleCurrent < -16834 / 2 ? -16834 / 2 : angleCurrent;
 
                 if (*resetTargetClamp) {

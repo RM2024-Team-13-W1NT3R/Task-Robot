@@ -21,7 +21,7 @@ float PID::update(float target, float measurement, float dt)
         iOut = -16834;
     }
 
-    dOut = Kd * (error - lastError) / dt;
+    dOut = Kd * (error - lastError) / dt  - Kdamp * dOut;
 
     output = pOut + iOut + dOut;
     output = output > MAX_OUTPUT ? MAX_OUTPUT : output;
