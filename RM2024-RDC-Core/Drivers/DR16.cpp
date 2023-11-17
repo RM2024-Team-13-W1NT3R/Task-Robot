@@ -28,6 +28,7 @@ uint32_t lastConnectedTime;
 static bool autoTrackEnabled = false;
 static bool leftMode = false;
 
+
 static HAL_StatusTypeDef status;
 static bool resetAngle;
 
@@ -161,7 +162,8 @@ void setRPM(RcData originalData) {
     // Robotic Arm Decoding
     int elevation = - channel3 * RPMConstant / 100; // Elevation
     
-    int changeAngle = (Abs(channel1) > 90) ? (channel1/Abs(channel1)): 0;
+    // int changeAngle = (Abs(channel1) > 90) ? (channel1/Abs(channel1)): 0;
+    int changeAngle = Abs(channel1) > 50 ? channel1 * RPMConstant / 10: 0;
     
 
 
@@ -194,10 +196,13 @@ void setRPM(RcData originalData) {
                 openClamp = false;
                 Servo::putdown();
             }
-
             updateRPM.clampMotor = changeAngle;
-            // if (changeAngle) {
-            // }
+            // updateRPM.clampMotor = motorRPM.clampMotor + changeAngle;
+            if (changeAngle) {
+                resetAngle = true;
+            } else {
+                resetAngle = false;
+            }
             updateRPM.motor0 = 0;
             updateRPM.motor1 = 0;
             updateRPM.motor2 = 0;
@@ -224,14 +229,18 @@ void setRPM(RcData originalData) {
 
     } else if (originalData.s2 == 1) {
         // Enable Left Wall Auto Shortcut
+        if (!autoTrackEnabled) {
+            AutoTrack::setStart();
+        }
         autoTrackEnabled = true;
         leftMode = true;
-        AutoTrack::setStart();
     } else if (originalData.s2 == 2) {
         // Enable Right Wall Auto Shortcut
+        if (!autoTrackEnabled) {
+            AutoTrack::setStart();
+        }
         autoTrackEnabled = true;
         leftMode = false;
-        AutoTrack::setStart();
     }
 
 }
@@ -280,6 +289,7 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
 /*================================================================================*/
 void init()
 {
+    motorRPM.clampMotor = 0;
     /*If you would like to, please implement your function definition here*/
     resetRcData();
     huart1.ErrorCallback = HAL_UART_ErrorCallback;

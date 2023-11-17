@@ -18,11 +18,14 @@ namespace Servo
 
     void pickup()
     {        
+        __HAL_TIM_SetCompare(&htim2,TIM_CHANNEL_1,110);
+        __HAL_TIM_SetCompare(&htim2,TIM_CHANNEL_1,40);
         __HAL_TIM_SetCompare(&htim2,TIM_CHANNEL_2,110);
         __HAL_TIM_SetCompare(&htim2,TIM_CHANNEL_2,40);
     }
     void putdown()
     {
+        __HAL_TIM_SetCompare(&htim2,TIM_CHANNEL_1,110);
         __HAL_TIM_SetCompare(&htim2,TIM_CHANNEL_2,110);
         
     }

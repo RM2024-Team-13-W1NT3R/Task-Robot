@@ -59,7 +59,7 @@ struct DJIMotor
      * float orientation; //  get the accumulated orientation of the motor
      * ......
      */
-    int16_t motorAngle;
+    int32_t motorAngle;
     int16_t rpm;
     int16_t torqueCurrent;
     uint8_t temperature;
@@ -99,11 +99,11 @@ uint16_t getTorqueCurrent(uint16_t canID);
  * it in the PID module
  * @retval motor's angle
  */
-uint16_t getMotorAngle(uint16_t canID);
+int32_t getMotorAngle(uint16_t canID);
 
-void setTargetClampAngle(uint16_t angle);
+void setTargetClampAngle(uint16_t canID, uint16_t angle);
 
-uint16_t* getTargetClampAngle();
+int32_t* getTargetClampAngle();
 /**
  * @brief Set the motor's output here
  * @note  You might need to refer to the user manual to "clamp" the maximum or

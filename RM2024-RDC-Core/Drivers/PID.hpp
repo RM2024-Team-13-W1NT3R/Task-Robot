@@ -43,6 +43,7 @@ class PID
      */
     float update(float target, float measurement, float dt = 0.001f);
 
+    float updateAngle(int32_t target, int32_t measurement, float dt = 0.001f);
     /*===================*/
     // Your self-defined functions begin here
     // You might wish to add more functions for your PID module
