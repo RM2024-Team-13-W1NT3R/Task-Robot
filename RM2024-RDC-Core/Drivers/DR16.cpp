@@ -163,7 +163,7 @@ void setRPM(RcData originalData) {
     int elevation = - channel3 * RPMConstant / 100; // Elevation
     
     // int changeAngle = (Abs(channel1) > 90) ? (channel1/Abs(channel1)): 0;
-    int changeAngle = Abs(channel1) > 50 ? channel1 * RPMConstant / 10: 0;
+    int changeAngle = Abs(channel1) > 70 ? channel1 * RPMConstant / 10: 0;
     
 
 
@@ -188,11 +188,11 @@ void setRPM(RcData originalData) {
                 updateRPM.updownMotor *= 0.70;
             }
             // updateRPM.clampMotor = changeAngle;
-            if (channel0 > 90 && !openClamp) {
+            if (channel0 > 99 && !openClamp) {
                 openClamp = true;
                 Servo::pickup();
 
-            } else if (channel0 < -90 && openClamp){
+            } else if (channel0 < -99 && openClamp){
                 openClamp = false;
                 Servo::putdown();
             }
