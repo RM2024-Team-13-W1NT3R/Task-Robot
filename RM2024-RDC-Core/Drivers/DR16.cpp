@@ -35,7 +35,7 @@ static bool resetAngle;
 bool* getResetAngle() {
     return &resetAngle;
 }
-float maxMotorRPM = 3000;
+float maxMotorRPM = 3600;
 
 // Internal function declarations
 void setRPM(RcData);
@@ -128,6 +128,26 @@ const float RPMConstant = maxMotorRPM / 100;
 // Find the Absolute Value of a Number
 #define Abs(N) ((N<0)?(-N):(N))
 
+int RPMMath(int value) {
+    // return (1.8 * value * RPMConstant + 8.2 * value * Abs(value) * RPMConstant / 100) / 10;
+    float level = 5;
+    if (Abs(value) < 5) {
+        return 0;
+    } else if (Abs(value) < 50) {
+        if (value > 0) {
+            return level * maxMotorRPM/100;
+        } else {
+            return -level * maxMotorRPM/100;
+        }
+    } else {
+        if (value > 0) {
+            return (1.9 * value - 90) * maxMotorRPM/100;
+        } else {
+            return (1.9 * value + 90) * maxMotorRPM/100;
+        }
+    }
+}
+
 /**
  * @brief Converts the signals from the DR16 controller to RPM
 */
@@ -142,25 +162,25 @@ void setRPM(RcData originalData) {
 
     // Motor Decoding
     // Forward and Backwards (Vertical) Motion, forward = positive
-    int motor0Vertical = channel3 * RPMConstant;
-    int motor1Vertical = - channel3 * RPMConstant;
-    int motor2Vertical = channel3 * RPMConstant;
-    int motor3Vertical = - channel3 * RPMConstant;
+    int motor0Vertical = RPMMath(channel3);
+    int motor1Vertical = -RPMMath(channel3);
+    int motor2Vertical = RPMMath(channel3);
+    int motor3Vertical = -RPMMath(channel3);
 
     // Left and Right (Horizontal) Motion, right = positive
-    int motor0Horizontal = channel2 * RPMConstant;
-    int motor1Horizontal = channel2 * RPMConstant;
-    int motor2Horizontal = - channel2 * RPMConstant;
-    int motor3Horizontal = - channel2 * RPMConstant;
+    int motor0Horizontal = RPMMath(channel2);
+    int motor1Horizontal = RPMMath(channel2);
+    int motor2Horizontal = -RPMMath(channel2);
+    int motor3Horizontal = -RPMMath(channel2);
 
     // Rotational Motion, clockwise = positive
-    int motor0Rotational = channel0 * RPMConstant;
-    int motor1Rotational = channel0 * RPMConstant;
-    int motor2Rotational = channel0 * RPMConstant;
-    int motor3Rotational = channel0 * RPMConstant;
+    int motor0Rotational = RPMMath(channel0);
+    int motor1Rotational = RPMMath(channel0);
+    int motor2Rotational = RPMMath(channel0);
+    int motor3Rotational = RPMMath(channel0);
 
     // Robotic Arm Decoding
-    int elevation = - channel3 * RPMConstant / 100; // Elevation
+    int elevation = - channel3 * RPMConstant / 80; // Elevation
     
     // int changeAngle = (Abs(channel1) > 90) ? (channel1/Abs(channel1)): 0;
     int changeAngle = Abs(channel1) > 70 ? channel1 * RPMConstant / 10: 0;

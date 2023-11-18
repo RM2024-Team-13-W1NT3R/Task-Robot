@@ -10,7 +10,7 @@ uint32_t currentTime;
 
 
 uint32_t FORWARD_TIME = 3000;
-uint32_t HORIZONTAL_TIME = 100;
+uint32_t HORIZONTAL_TIME = 0;
 uint8_t horizontalCount = 0;
 
 static volatile float kp = 1;
@@ -18,8 +18,8 @@ static volatile float ki = 2;
 static volatile float kd = 0;
 Control::PID autoPID[4] {{kp, ki, kd}, {kp, ki, kd}, {kp, ki, kd}, {kp, ki, kd}};
 
-int16_t FORWARD_SPEED = 2000;
-int16_t HORIZONTAL_SPEED = 2000;
+int16_t FORWARD_SPEED = 1800;
+int16_t HORIZONTAL_SPEED = 1350;
 
 
 enum class State {
@@ -60,7 +60,7 @@ void controlMotor(State state, bool leftMode) {
         break;
     }
 
-    if (leftMode && (state == State::MOVE_IN_HORIZONTAL || state == State::MOVE_OUT_HORIZONTAL)) {
+    if (leftMode && (state == State::FORWARD)) {
         targetMotorSpeed[0] = -targetMotorSpeed[0];
         targetMotorSpeed[1] = -targetMotorSpeed[1];
         targetMotorSpeed[2] = -targetMotorSpeed[2];
