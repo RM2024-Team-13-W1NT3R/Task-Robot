@@ -1,17 +1,25 @@
 #include "PID.hpp"
 #if USE_PID
+
 namespace Control
 {
 float MAX_OUTPUT = 16834/2;
 /*This is where you implement the PID algorithm*/
+
+// Find the Absolute Value of a Number
+#define Abs(N) ((N<0)?(-N):(N))
+
 float PID::update(float target, float measurement, float dt)
 {
     /*=====================================================================*/
     // Your implementation of the PID algorithm begins here
     /*=====================================================================*/
     error = target - measurement;
+
+    // proportional term
     pOut = Kp * error;
 
+    // integral term
     iOut += Ki * error * dt;
 
     // Limit the integral to prevent huge overshoot when quickly switching between the max values
@@ -20,13 +28,19 @@ float PID::update(float target, float measurement, float dt)
     } else if (iOut < -16834) {
         iOut = -16834;
     }
-
+    
+    // integral term reset
+    if (Abs(error) < 10) {
+        iOut = iOut * 0.9;
+    }
+    
+    // derivative term
     dOut = Kd * (error - lastError) / dt  - Kdamp * dOut;
+    lastError = error;
 
     output = pOut + iOut + dOut;
     output = output > MAX_OUTPUT ? MAX_OUTPUT : output;
     output = output < -MAX_OUTPUT ? -MAX_OUTPUT : output;
-    lastError = error;
     /*=====================================================================*/
     // Your implementation of the PID algorithm ends here
     /*=====================================================================*/
