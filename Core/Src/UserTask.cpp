@@ -70,7 +70,6 @@ void userTask(void *)
         /*=================================================*/
         goingUpTime = HAL_GetTick();
         DR16::getRcConnected();
-        // taskENTER_CRITICAL();
         if (*DR16::getAutoTrackEnabled()) {
             AutoTrack::executeMovement(*DR16::getLeftMode());
         } else {
@@ -78,13 +77,7 @@ void userTask(void *)
         
         for (canID = 1; canID <= 6; canID++)
         {
-            // if (!status)
-            // {
-            //     continue; // skip modulating when receiving data failed
-            // }
-
             float targetMotorOutput[6];
-            // float targetAngleCurrent = 4000;
             float rpmCurrent = 0;
   
             switch (canID)
@@ -114,7 +107,6 @@ void userTask(void *)
                 if (HAL_GPIO_ReadPin(SWITCH_BOT_GPIO_Port, SWITCH_BOT_Pin) == GPIO_PIN_RESET && targetCurrent > 0) {
                     targetCurrent = 0;
                 }
-                // DJIMotor::setClampOutput(targetCurrent, canID);
                 break;
             case 6:
                 angleCurrent = angleStayPID.update(*DJIMotor::getTargetClampAngle(), DJIMotor::getMotorAngle(canID));
@@ -133,39 +125,8 @@ void userTask(void *)
                     
                     // do pid rpm for angle
                 } else {
-                    // angleCurrent = angleStayPID.update(*DJIMotor::getTargetClampAngle(), DJIMotor::getMotorAngle(canID));
                     targetCurrent = angleCurrent;
                 }
-
-                // targetCurrent = angleStayPID.update(DR16::getMotorRPM()->clampMotor, DJIMotor::getMotorAngle(canID));
-//  
-
-                // targetCurrent = angleStayPID.update(*DJIMotor::getTargetClampAngle(), DJIMotor::getMotorAngle(canID));
-
-                // targetMotorOutput[5] = DR16::getMotorRPM()->clampMotor;
-                // targetCurrent = pid[canID - 1].update(targetMotorOutput[5], DJIMotor::getRPM(canID));
-                // targetCurrent = 0;
-            //     if (targetCurrent > -4000) {
-            //         targetCurrent--;
-            //     }
-                // if (DR16::getMotorRPM()->clampMotor > 0) {
-                //     stayDown = false;
-                //     if (!started) {
-                //         targetCurrent = -3000;
-                //         started = true;
-                //     } else {
-                //         targetCurrent = -6000;
-                //     }
-                // } else if (DR16::getMotorRPM()->clampMotor == 0) {
-                //     if (stayDown) {
-                //         targetCurrent = -1000;
-                //     } else {
-                //         targetCurrent = -4500;
-                //     }
-                // } else if (DR16::getMotorRPM()->clampMotor < 0) {
-                //     targetCurrent = -1000;
-                //     stayDown = true;
-                // }
                 break;
                  
             default: 

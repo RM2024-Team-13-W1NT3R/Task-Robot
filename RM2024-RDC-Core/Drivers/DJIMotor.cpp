@@ -97,28 +97,6 @@ void getRxMessage()
 
         motorFeedback[canID - 1].rpm =
             rxData[2] << 8 | rxData[3];
-        
-        // if (canID != 6) {
-        // motorFeedback[canID - 1].motorAngle =
-        // rxData[0] << 8 | rxData[1];
-        // } else {
-        //     measured_motorAngle = rxData[0] << 8 | rxData[1];
-        //     newAngle = measured_motorAngle + 8192 * clampRotation - clampAngleOffset;
-        //     if (!clampRotationCalibrated) {
-        //         clampRotationCalibrated = true;
-        //         clampRotation = 5;
-        //         clampAngleOffset = rxData[0] << 8 | rxData[1];
-        //         motorFeedback[canID - 1].motorAngle =  + 8192 * clampRotation - clampAngleOffset;
-        //     } else {
-        //         if (motorFeedback[5].rpm < 0 && newAngle - motorFeedback[5].motorAngle < 0) {
-        //             clampRotation++;
-        //         } else if (motorFeedback[canID - 1].rpm > 0 && newAngle - motorFeedback[5].motorAngle > 0) {
-        //             clampRotation--;
-        //         }
-        //         motorFeedback[canID - 1].motorAngle = measured_motorAngle + 8192 * clampRotation - clampAngleOffset;
-
-        //     }
-        // }
 
         motorFeedback[canID - 1].torqueCurrent =
             rxData[4] << 8 | rxData[5];
@@ -148,14 +126,6 @@ int32_t getMotorAngle(uint16_t canID) { return motorFeedback[canID - 1].motorAng
 void setWheelsOutput(float output, uint16_t canID)
 {
     if (canID > 4) {return;}
-    // if (output > maxCurrent)
-    // {
-    //     output = maxCurrent;
-    // }
-    // else if (output < -maxCurrent)
-    // {
-    //     output = -maxCurrent;
-    // }
     
     output = output > maxCurrent ? maxCurrent : output;
     output = output < -maxCurrent ? -maxCurrent : output;
