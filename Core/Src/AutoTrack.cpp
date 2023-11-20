@@ -9,17 +9,20 @@ uint32_t autoLastUpdatedTime;
 uint32_t currentTime;
 
 
-uint32_t FORWARD_TIME = 3000;
+uint32_t FORWARD_TIME = 100000;
 uint32_t HORIZONTAL_TIME = 0;
 uint8_t horizontalCount = 0;
 
-static volatile float kp = 1;
-static volatile float ki = 2;
-static volatile float kd = 0;
-Control::PID autoPID[4] {{kp, ki, kd}, {kp, ki, kd}, {kp, ki, kd}, {kp, ki, kd}};
+// static volatile float kp = 1; 
+// static volatile float ki = 2;
+// static volatile float kd = 0;x
+static volatile float autokp = 2.0f;
+static volatile float autoki = 15.0f;
+static volatile float autokd = 0.0f;
+Control::PID autoPID[4] {{autokp, autoki, autokd}, {autokp, autoki, autokd}, {autokp, autoki, autokd}, {autokp, autoki, autokd}};
 
 int16_t FORWARD_SPEED = 1800;
-int16_t HORIZONTAL_SPEED = 1350;
+int16_t HORIZONTAL_SPEED = 0;
 
 
 enum class State {
@@ -79,7 +82,10 @@ void executeMovement(bool leftMode) {
     {
     case State::START:
         startTime = HAL_GetTick();
-        state = State::MOVE_OUT_HORIZONTAL;
+        state = State::FORWARD;
+        for (int i = 0; i < 4; i++) {
+            autoPID[i].resetPID();
+        }
         autoLastUpdatedTime = HAL_GetTick();
         break;
     case State::FORWARD:

@@ -80,6 +80,12 @@ float PID::updateAngle(int32_t target, int32_t measurement, float dt)
     
 }
 
+void PID::resetPID() {
+    dOut = 0;
+    error = 0;
+    output = 0;
+    iOut = 0;
 
+}
 }  // namespace Control
 #endif

@@ -42,7 +42,7 @@ class PID
      * @param dt            The time interval between two updates
      */
     float update(float target, float measurement, float dt = 0.001f);
-
+    void resetPID();
     float updateAngle(int32_t target, int32_t measurement, float dt = 0.001f);
     /*===================*/
     // Your self-defined functions begin here
