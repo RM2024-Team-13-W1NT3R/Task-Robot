@@ -70,11 +70,13 @@ void userTask(void *)
         /*=================================================*/
         goingUpTime = HAL_GetTick();
         DR16::getRcConnected();
+
+        // Enable the auto shortcut
         if (*DR16::getAutoTrackEnabled()) {
             AutoTrack::executeMovement(*DR16::getLeftMode());
         } else {
 
-        
+        // Update the motor output values for each motor
         for (canID = 1; canID <= 6; canID++)
         {
             float targetMotorOutput[6];
@@ -113,17 +115,14 @@ void userTask(void *)
                 curAngle = *DJIMotor::getTargetClampAngle();
                 
                 angleCurrent = angleCurrent > 2000 ? 2000 : angleCurrent;
-                // angleCurrent = angleCurrent < -16834 / 2 ? -16834 / 2 : angleCurrent;
 
                 if (*resetTargetClamp) {
+                    // Do PID for the clamp motor
                     targetCurrent = 0;
                     DJIMotor::setTargetClampAngle(canID, 0);
-                    // *resetTargetClamp = false;
                     rpmCurrent = pid[canID - 1].update(DR16::getMotorRPM()->clampMotor, DJIMotor::getRPM(canID));
                     rpmCurrent = rpmCurrent > 3000 ? 3000 : rpmCurrent;
                     targetCurrent = rpmCurrent;
-                    
-                    // do pid rpm for angle
                 } else {
                     targetCurrent = angleCurrent;
                 }
@@ -145,6 +144,7 @@ void userTask(void *)
             
         } 
         }
+        // Transmit the data to the wheels and the clamps
         DJIMotor::transmitWheels();
         DJIMotor::transmitClamps();
         // taskEXIT_CRITICAL();
