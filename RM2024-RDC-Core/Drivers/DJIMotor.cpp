@@ -95,6 +95,16 @@ void getRxMessage()
         HAL_CAN_GetRxMessage(&hcan, CAN_RX_FIFO0, &rxHeader, rxData);
         curFifoLevel = HAL_CAN_GetRxFifoFillLevel(&hcan, CAN_RX_FIFO0);
         uint16_t canID = rxHeader.StdId - 0x200;
+
+        // Check if the CAN ID is valid
+        if (canID < 1 || canID > DJI_MOTOR_COUNT) {
+            continue;
+        }
+
+        // Check if the data length matches the expected length
+        if (rxHeader.DLC != 8) {
+            continue;
+        }
         
         motorFeedback[canID - 1].canID = canID;
 
