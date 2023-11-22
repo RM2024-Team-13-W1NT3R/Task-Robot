@@ -50,6 +50,7 @@ const RcData *getRcData() { return &rcData;}
 
 const MotorRPM *getMotorRPM() { return &motorRPM;}
 
+// Reset the rcData in case of invalid data
 void resetRcData() {
     rcData.channel0 = 1024;
     rcData.channel1 = 1024;
@@ -63,6 +64,7 @@ void resetRcData() {
     motorRPM.motor3 = 0;
 }
 
+// Check if the data is valid
 bool validateRcData() {
     if ((rcData.channel0 > 1684 || rcData.channel0 < 364) ||
         (rcData.channel1 > 1684 || rcData.channel1 < 364) ||
@@ -75,6 +77,7 @@ bool validateRcData() {
     return true;
 }
 
+// Decode data received from the controller
 void decodeRcData() {
     rcData.channel0 = ((uint16_t) rcRxBuffer[0] | (uint16_t) rcRxBuffer[1] << 8) & 0x07FF;
     rcData.channel1 = ((uint16_t) rcRxBuffer[1] >> 3 | (uint16_t) rcRxBuffer[2] << 5) & 0x07FF;
@@ -86,7 +89,7 @@ void decodeRcData() {
 
 void rxEventCallback(UART_HandleTypeDef *huart, uint16_t datasize) {
     decodeRcData(); // decode the controller data to rcData
-    status = HAL_UARTEx_ReceiveToIdle_IT(huart, rcRxBuffer, DR16::DR16_FRAME_LENGTH); // start the next round of UART data reception
+    status = HAL_UARTEx_ReceiveToIdle_IT(huart, rcRxBuffer, DR16::DR16_FRAME_LENGTH); // Start the next round of UART data reception
     getRcConnected();
     // reset the rcData if the data is invalid
     if (!validateRcData()) {
@@ -106,6 +109,8 @@ void rxEventCallback(UART_HandleTypeDef *huart, uint16_t datasize) {
 
 bool getIsRcConnected() {
     uint32_t currentTime = HAL_GetTick();
+
+    // If no signal is received in 1 second, assume the controller is disconnected
     if ((lastUpdatedTime + 1000 > currentTime )) {
         lastConnectedTime = currentTime;
         rcConnected = true;
@@ -129,7 +134,8 @@ const float RPMConstant = maxMotorRPM / 100;
 #define Abs(N) ((N<0)?(-N):(N))
 
 int RPMMath(int value) {
-    // return (1.8 * value * RPMConstant + 8.2 * value * Abs(value) * RPMConstant / 100) / 10;
+    // Custom control curve for our operator
+    // If non custom, a regular quadratic curve should be used
     float level = 5;
     if (Abs(value) < 5) {
         return 0;
@@ -199,15 +205,18 @@ void setRPM(RcData originalData) {
             updateRPM.motor2 = motor2Horizontal + motor2Vertical + motor2Rotational;
             updateRPM.motor3 = motor3Horizontal + motor3Vertical + motor3Rotational;
             
+            // Reset the other data if not in use
             motorRPM.clampMotor = 0;
             motorRPM.updownMotor = 0;
         } else if (originalData.s1 == 3)
         {
+            // Clamp elevation speed should be different when going up or down due to gravity to avoid slipping
             updateRPM.updownMotor = elevation * 200;
             if (updateRPM.updownMotor > 0) {
                 updateRPM.updownMotor *= 0.70;
             }
-            // updateRPM.clampMotor = changeAngle;
+
+            // Clamp pickup controls
             if (channel0 > 99 && !openClamp) {
                 openClamp = true;
                 Servo::pickup();
@@ -216,13 +225,15 @@ void setRPM(RcData originalData) {
                 openClamp = false;
                 Servo::putdown();
             }
+
             updateRPM.clampMotor = changeAngle;
-            // updateRPM.clampMotor = motorRPM.clampMotor + changeAngle;
             if (changeAngle) {
                 resetAngle = true;
             } else {
                 resetAngle = false; 
             }
+
+            // Reset the other data if not in use
             updateRPM.motor0 = 0;
             updateRPM.motor1 = 0;
             updateRPM.motor2 = 0;
@@ -233,6 +244,7 @@ void setRPM(RcData originalData) {
             updateRPM.motor2 = - motor2Horizontal - motor2Vertical + motor2Rotational;
             updateRPM.motor3 = - motor3Horizontal - motor3Vertical + motor3Rotational;
 
+            // Reset the other data if not in use
             motorRPM.clampMotor = 0;
             motorRPM.updownMotor = 0;
         }
@@ -299,8 +311,8 @@ void limitRPM(MotorRPM* inputRPM) {
 }
 
 void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
+    // Abort and reset all the data and try again
     HAL_UART_Abort_IT(huart);
-
     rcConnected = false;
     resetRcData();
     HAL_UARTEx_ReceiveToIdle_IT(huart, rcRxBuffer, DR16::DR16_FRAME_LENGTH);

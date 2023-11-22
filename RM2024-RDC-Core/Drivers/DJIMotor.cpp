@@ -42,6 +42,8 @@ CAN_RxHeaderTypeDef rxHeader;
 
 // can filter used for receiving messages
 CAN_FilterTypeDef filter[DJI_MOTOR_COUNT];
+
+// Chassis motor filters
 CAN_FilterTypeDef filterlist = {
                 0x201 << 5,
                 0x202 << 5,
@@ -53,7 +55,8 @@ CAN_FilterTypeDef filterlist = {
                 CAN_FILTERSCALE_16BIT,
                 CAN_FILTER_ENABLE,
                 0};
-// use mask mode instead
+
+// Robotic arm filters
 CAN_FilterTypeDef filterlist1 = {
                 0x205 << 5,
                 0x206 << 5,
@@ -95,14 +98,24 @@ uint32_t curFifoLevel;
 // getting the feedback of motor (maximum 3 motors at once)
 void getRxMessage()
 {
-    // HAL_CAN_Stop(&hcan);
-    // HAL_CAN_Start(&hcan);
-
+    // Get the number of messages available
     fifoLevel = HAL_CAN_GetRxFifoFillLevel(&hcan, CAN_RX_FIFO0);
+
+    // Get and process each message
     for (int i = 0; i < fifoLevel; i++) {
         HAL_CAN_GetRxMessage(&hcan, CAN_RX_FIFO0, &rxHeader, rxData);
         curFifoLevel = HAL_CAN_GetRxFifoFillLevel(&hcan, CAN_RX_FIFO0);
         uint16_t canID = rxHeader.StdId - 0x200;
+
+        // Check if the CAN ID is valid
+        if (canID < 1 || canID > DJI_MOTOR_COUNT) {
+            continue;
+        }
+
+        // Check if the data length matches the expected length
+        if (rxHeader.DLC != 8) {
+            continue;
+        }
         
         motorFeedback[canID - 1].canID = canID;
 
@@ -114,6 +127,8 @@ void getRxMessage()
 
         motorFeedback[canID - 1].temperature = rxData[6];
     }
+
+    // Self defined motor angle variable for use in clamp rotation
     for (int canID = 1; canID <= DJI_MOTOR_COUNT; canID++) {
         motorFeedback[canID - 1].motorAngle += motorFeedback[canID - 1].rpm;
     
@@ -143,12 +158,14 @@ int32_t getMotorAngle(uint16_t canID) { return motorFeedback[canID - 1].motorAng
 // setting the output of a motor
 void setWheelsOutput(float output, uint16_t canID)
 {
+    // Only the chassis motors are used
     if (canID > 4) {return;}
     
+    // Limiting the output current
     output = output > maxCurrent ? maxCurrent : output;
     output = output < -maxCurrent ? -maxCurrent : output;
     
-    // uint8_t mask                = 0xff;
+    // Sending data into the CAN bus
     txWheelsData[(canID - 1) * 2 + 1] = (static_cast<int> (output));
     txWheelsData[(canID - 1) * 2]     = (static_cast<int> (output) >> 8);
 }
@@ -156,16 +173,14 @@ void setWheelsOutput(float output, uint16_t canID)
 // setting the output of a motor
 void setClampsOutput(float output, uint16_t canID)
 {
+    // Only the clamp motors are used
     if (canID <= 4) {return;}
-    if (output > maxCurrent)
-    {
-        output = maxCurrent;
-    }
-    else if (output < -maxCurrent)
-    {
-        output = -maxCurrent;
-    }
-    // uint8_t mask                = 0xff; 
+
+    // Limiting the output current
+    output = output > maxCurrent ? maxCurrent : output;
+    output = output < -maxCurrent ? -maxCurrent : output;
+
+    // Sending data into the CAN bus
     txClampData[(canID - 5) * 2 + 1] = (static_cast<int> (output));
     txClampData[(canID - 5) * 2]     = (static_cast<int> (output) >> 8);
 }

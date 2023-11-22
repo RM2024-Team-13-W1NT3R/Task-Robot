@@ -38,21 +38,29 @@ State state;
 static volatile int32_t targetMotorSpeed[4];
 float targetMotorOutput[4];
 
-void controlMotor(State state, bool leftMode) {
+// Auto shortcut flow
+// 1. Goes and sticks to the wall to align
+// 2. Move a bit away from the wall
+// 3. Move forward along the wall
+// Steps 2 and 3 were removed due to the auto shortcut being very straight
+void controlMotor(State state, bool Mode) {
     switch (state)
     {
+    // Move forward
     case State::FORWARD:
         targetMotorSpeed[0] = FORWARD_SPEED;
         targetMotorSpeed[1] = -FORWARD_SPEED;
         targetMotorSpeed[2] = FORWARD_SPEED;
         targetMotorSpeed[3] = -FORWARD_SPEED;
         break;
+    // Go and stick to the wall
     case State::MOVE_IN_HORIZONTAL:
         targetMotorSpeed[0] = FORWARD_SPEED + HORIZONTAL_SPEED;
         targetMotorSpeed[1] = -FORWARD_SPEED + HORIZONTAL_SPEED;
         targetMotorSpeed[2] = FORWARD_SPEED + -HORIZONTAL_SPEED;
         targetMotorSpeed[3] = -FORWARD_SPEED + -HORIZONTAL_SPEED;
         break;
+    // Move away from the wall
     case State::MOVE_OUT_HORIZONTAL:
         targetMotorSpeed[0] = FORWARD_SPEED + -HORIZONTAL_SPEED;
         targetMotorSpeed[1] = -FORWARD_SPEED + -HORIZONTAL_SPEED;
@@ -62,8 +70,8 @@ void controlMotor(State state, bool leftMode) {
     default:
         break;
     }
-
-    if (leftMode && (state == State::FORWARD)) {
+    // Reverse the forward direction if the robot is in reverse mode
+    if (Mode && (state == State::FORWARD)) {
         targetMotorSpeed[0] = -targetMotorSpeed[0];
         targetMotorSpeed[1] = -targetMotorSpeed[1];
         targetMotorSpeed[2] = -targetMotorSpeed[2];
@@ -76,10 +84,11 @@ void controlMotor(State state, bool leftMode) {
     }   
 }
 
-void executeMovement(bool leftMode) {
+void executeMovement(bool Mode) {
     currentTime = HAL_GetTick();
     switch (state)
     {
+    // Start the auto shortcut mode
     case State::START:
         startTime = HAL_GetTick();
         state = State::FORWARD;
@@ -88,27 +97,33 @@ void executeMovement(bool leftMode) {
         }
         autoLastUpdatedTime = HAL_GetTick();
         break;
+    
+    // Start the forward mode
     case State::FORWARD:
         if (currentTime - autoLastUpdatedTime > FORWARD_TIME) {
             state = State::MOVE_IN_HORIZONTAL;
             autoLastUpdatedTime = HAL_GetTick();
         }
-        controlMotor(state, leftMode);
+        controlMotor(state, Mode);
         break;
+
+    // Start moving away from the wall
     case State::MOVE_OUT_HORIZONTAL:
         if (currentTime - autoLastUpdatedTime > HORIZONTAL_TIME - HORIZONTAL_TIME) {
             state = State::FORWARD;
             autoLastUpdatedTime = HAL_GetTick();
         }
-        controlMotor(state, leftMode);
+        controlMotor(state, Mode);
         break;
+    
+    // Start moving towards the wall
     case State::MOVE_IN_HORIZONTAL:
         if (currentTime - autoLastUpdatedTime > HORIZONTAL_TIME) {
             state = State::MOVE_OUT_HORIZONTAL;
             autoLastUpdatedTime = HAL_GetTick();
             horizontalCount++;
         }
-        controlMotor(state, leftMode);
+        controlMotor(state, Mode);
         break;
     default:
         break;

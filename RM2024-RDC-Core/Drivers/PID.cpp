@@ -9,6 +9,8 @@ float MAX_OUTPUT = 16834/2;
 // Find the Absolute Value of a Number
 #define Abs(N) ((N<0)?(-N):(N))
 
+
+// PID variation that resets the integral term, used for wheels
 float PID::update(float target, float measurement, float dt)
 {
     /*=====================================================================*/
@@ -47,6 +49,7 @@ float PID::update(float target, float measurement, float dt)
     return this->output;  // You need to give your user the output for every update
 }
 
+// PID variation that does not reset the integral term, used for the clamp
 float PID::updateAngle(int32_t target, int32_t measurement, float dt)
 {
     /*=====================================================================*/
