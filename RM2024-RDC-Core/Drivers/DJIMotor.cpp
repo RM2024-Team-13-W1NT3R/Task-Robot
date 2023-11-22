@@ -14,28 +14,33 @@ namespace DJIMotor
 static int32_t targetClampAngle = 0;
 
 
-
+// This function is to set a target angle for our clamp rotation
 int32_t* getTargetClampAngle() {
     return &targetClampAngle;
 }
 
-
+// declartion of feedbacks, data buffers
 DJIMotor motorFeedback[DJI_MOTOR_COUNT];
 uint32_t mailbox;
 uint8_t rxData[8];
 uint8_t txWheelsData[8];
 uint8_t txClampData[8];
 
+// used for calculation for angle (but not not in use)
 uint8_t clampRotation = 5;
 uint32_t clampAngleOffset = 0;
 bool clampRotationCalibrated = false;
 
+// buffer for calculating angle
 int16_t measured_motorAngle = 0;
 int32_t newAngle;
 
+// used for transmission headers
 CAN_TxHeaderTypeDef txWheelsHeader = {0x200, 0, CAN_ID_STD, CAN_RTR_DATA, 8, DISABLE};
 CAN_TxHeaderTypeDef txClampHeader  = {0x1ff, 0, CAN_ID_STD, CAN_RTR_DATA, 8, DISABLE};
 CAN_RxHeaderTypeDef rxHeader;
+
+// can filter used for receiving messages
 CAN_FilterTypeDef filter[DJI_MOTOR_COUNT];
 
 // Chassis motor filters
@@ -64,7 +69,7 @@ CAN_FilterTypeDef filterlist1 = {
                 CAN_FILTER_ENABLE,
                 0};
 
-                 
+// getting the torque current of a motor     
 uint16_t getTorqueCurrent(uint16_t canID) {
     return motorFeedback[canID - 1].torqueCurrent;
 }
@@ -77,14 +82,20 @@ volatile HAL_StatusTypeDef status;
 /**
  * @todo
  */
+
+// initialize the motor controller's filter to receive messages
 void init()
 {
     HAL_CAN_ConfigFilter(&hcan, &filterlist);
     HAL_CAN_ConfigFilter(&hcan, &filterlist1);
     HAL_CAN_Start(&hcan);
 }
+
+// initialize the motor controller's recieving fifo
 uint32_t fifoLevel;
 uint32_t curFifoLevel;
+
+// getting the feedback of motor (maximum 3 motors at once)
 void getRxMessage()
 {
     // Get the number of messages available
@@ -127,17 +138,24 @@ void getRxMessage()
 /**
  * @todo
  */
+
+// getting the angle of a motor
 float getEncoder(uint16_t canID) { return motorFeedback[canID - 1].motorAngle; }
 
 /**
  * @todo
  */
+
+// getting the rpm of a motor
 float getRPM(uint16_t canID) { return motorFeedback[canID - 1].rpm; }
 
+// getting the angle of a motor
 int32_t getMotorAngle(uint16_t canID) { return motorFeedback[canID - 1].motorAngle; }
 /**
  * @todo
  */
+
+// setting the output of a motor
 void setWheelsOutput(float output, uint16_t canID)
 {
     // Only the chassis motors are used
@@ -152,6 +170,7 @@ void setWheelsOutput(float output, uint16_t canID)
     txWheelsData[(canID - 1) * 2]     = (static_cast<int> (output) >> 8);
 }
 
+// setting the output of a motor
 void setClampsOutput(float output, uint16_t canID)
 {
     // Only the clamp motors are used
@@ -166,7 +185,7 @@ void setClampsOutput(float output, uint16_t canID)
     txClampData[(canID - 5) * 2]     = (static_cast<int> (output) >> 8);
 }
 
-// Clamp angle calibration
+// setting the target angle of a motor
 void setTargetClampAngle(uint16_t canID, uint16_t angle = 0) {
     targetClampAngle = getMotorAngle(canID) + angle;
 }
@@ -174,10 +193,11 @@ void setTargetClampAngle(uint16_t canID, uint16_t angle = 0) {
 /**
  * @todo
  */
-// Transmit data to the chassis motors
+
+// transmit the set current to the motor controller
 void transmitWheels() { HAL_CAN_AddTxMessage(&hcan, &txWheelsHeader, txWheelsData, &mailbox); }
 
-// Transmit data to the clamp motors
+// transmit the set current to the motor controller
 void transmitClamps() { HAL_CAN_AddTxMessage(&hcan, &txClampHeader, txClampData, &mailbox); }
 
 //void callback() {}
