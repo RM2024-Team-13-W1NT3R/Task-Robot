@@ -25,6 +25,8 @@ StaticTask_t xPIDTaskTCB;
 StackType_t uxRxTaskStack[512];
 StaticTask_t xRxTaskTCB;
 
+
+// declare the PID variables
 static volatile float kp = 2.0f;
 static volatile float ki = 5.0f;
 static volatile float kd = 0.02f;
