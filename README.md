@@ -3,23 +3,18 @@
 ## Introduction
 We are W1NT3R, Group 13 of the HKUST Robot Design Competition 2023. This repository contains the codes and configurations for our Task Robot, used to transport seedlings from a loading zone to specified planting zones.
 
-------------
-[TOC]
-
-------------
-
 ## Images
 ![](https://files.catbox.moe/cjregv.png)
 
 ![](https://files.catbox.moe/9az16h.jpg)
 
 ## Contributors
-- @DuckDuckCho
-- @SunnyFarmDay
-- @Qlinaq
-- @wilsonooo09
-- @z1y4n
-- @ZoellickHan
+- [DuckDuckCho](https://github.com/DuckDuckCho)
+- [SunnyFarmDay](https://github.com/SunnyFarmDay)
+- [Qlinaq](https://github.com/Qlinaq)
+- [wilsonooo09](https://github.com/wilsonooo09)
+- [z1y4n](https://github.com/z1y4n)
+- [ZoellickHan](https://github.com/ZoellickHan)
 
 ## Structure
 
